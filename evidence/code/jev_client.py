@@ -11,7 +11,16 @@ from datetime import datetime, timezone
 import requests
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
-MODEL = "jev-latest"
+
+# The original runs used the floating alias `jev-latest`, which resolved to jev-1.13.0
+# throughout. It has since moved to jev-1.14.0, so the alias no longer reproduces the
+# published data: an arm collected today would silently mix model versions with the ones
+# already on disk and confound dataset with version. The endpoint accepts a concrete
+# version in the same field, so every arm now pins one explicitly. Override with
+# JEV_MODEL to collect against a different version on purpose -- that is how the
+# cross-version replication arm is run.
+PUBLISHED_MODEL = "jev-1.13.0"
+MODEL = os.environ.get("JEV_MODEL", PUBLISHED_MODEL)
 MAX_RETRIES = 6
 RETRY_STATUS = (429, 500, 502, 503, 504, 529)
 

@@ -25,6 +25,7 @@ import random
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import jev_client
 from common import RAW
 from jev_client import (
     build_choice_payload,
@@ -82,7 +83,7 @@ def plan_perms(items, max_rot, use_all, perm_width):
 
 
 def run(subject, max_rot, label_mode, use_all=False, perm_width=4, sample=None,
-        seed=20260919):
+        seed=20260919, out_prefix=None):
     items = load_items(subject)
     if use_all:
         items = [it for it in items if len(it["choices"]) == perm_width]
@@ -144,7 +145,7 @@ def run(subject, max_rot, label_mode, use_all=False, perm_width=4, sample=None,
             rec.update({"choices_by_rot": [p[0] for p in per],
                         "probs_by_rot": [p[1] for p in per]})
         recs.append(rec)
-    stem = "permall" if use_all else "perm"
+    stem = out_prefix or ("permall" if use_all else "perm")
     path = os.path.join(RAW, f"{stem}_{subject}.json")
     with open(path, "w") as fh:
         json.dump(recs, fh)
@@ -167,11 +168,20 @@ def main():
                          "per item); wider items are skipped because n! explodes")
     ap.add_argument("--sample", type=int, default=None,
                     help="evaluate a seeded random subset of this many items")
+    ap.add_argument("--model-version", default=None,
+                    help=f"pin a concrete model version (default {jev_client.MODEL}); "
+                         "the floating alias no longer reproduces the published runs")
+    ap.add_argument("--out-prefix", default=None,
+                    help="override the output filename stem, to keep a replication arm "
+                         "on a different model version from overwriting the main one")
     args = ap.parse_args()
+    if args.model_version:
+        jev_client.MODEL = args.model_version
+    print(f"model: {jev_client.MODEL}", file=sys.stderr)
     for s in args.subjects:
         run(s, args.max_rotations, args.label_mode,
             use_all=args.all_permutations, perm_width=args.perm_width,
-            sample=args.sample)
+            sample=args.sample, out_prefix=args.out_prefix)
 
 
 if __name__ == "__main__":

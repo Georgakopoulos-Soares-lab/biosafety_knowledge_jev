@@ -38,6 +38,7 @@ import sys
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import jev_client
 from common import RAW
 from jev_client import (
     build_choice_payload,
@@ -213,7 +214,13 @@ def main():
                     help="items per dataset for the factorial design")
     ap.add_argument("--limit", type=int, default=None,
                     help="cap items for a smoke test")
+    ap.add_argument("--model-version", default=None,
+                    help=f"pin a concrete model version (default {jev_client.MODEL}); "
+                         "the floating alias no longer reproduces the published runs")
     args = ap.parse_args()
+    if args.model_version:
+        jev_client.MODEL = args.model_version
+    print(f"model: {jev_client.MODEL}", file=sys.stderr)
 
     for subject in args.subjects:
         if args.design == "tokens":

@@ -23,19 +23,36 @@ they run.
 
 ## Order to run them in
 
-### 0. Version check — one call, do this first
+### 0. Version check — DONE, and it changed the plan
 
-```sh
-python3 run_eval.py bio --tag versioncheck
+Run on 2026-11-01: the alias `jev-latest` now resolves to **`jev-1.14.0`**. Every number in
+the paper was collected against **`jev-1.13.0`**.
+
+This matters more than it looks. Had the arms below been collected through the alias, they
+would have run against 1.14.0 and been compared against 1.13.0 data already on disk —
+silently confounding dataset with model version. The rotation result on WMDP-Chem would not
+have been comparable to the one on WMDP-Cyber.
+
+The endpoint accepts a concrete version in the same `model` field, verified both ways:
+
+```
+request jev-1.13.0 -> served jev-1.13.0    PINNED OK
+request jev-1.14.0 -> served jev-1.14.0    PINNED OK
 ```
 
-Then read `model_version` out of `raw/bio_versioncheck_manifest.json`. The original runs all
-resolved to `jev-1.13.0`. **If it now resolves to something newer, stop and tell me** — a
-re-run on a sample would give a second system to compare against in the only sense available
-to us, which is the one thing reviewer 11B asked for that we currently cannot answer. It
-also makes "hosted models change under evaluation" a reportable finding in its own right.
+So `jev_client.MODEL` now defaults to `jev-1.13.0`, the published version, instead of the
+floating alias. `run_eval.py` and `run_circular.py` take `--model-version`, and both print
+the version they are using before the first call. Every arm below is therefore collected
+against the same model as the existing data.
 
-Delete the file afterwards if the version is unchanged; it is a probe, not an arm.
+**This is also a finding for the paper.** A hosted model moved under a published
+evaluation inside six weeks, with no change to the identifier the original runs used. Any
+result collected through a floating alias is not reproducible, and the paper's
+reproducibility limitation should say so and name the fix: pin the version.
+
+**And it is a partial answer to reviewer 11B's point 1.** Re-running a sample against
+1.14.0 gives a genuine second system — the same product after a vendor update — and tests
+whether the order-instability finding survives it. See arm 5.
 
 ### 1. Rotations on the two WMDP suites that lack them — 4,876 calls
 
@@ -85,6 +102,23 @@ change which option follows which, so they cannot see adjacency effects. This me
 much the 37.4% figure under-counts. **Either outcome is publishable:** more instability
 strengthens the finding; the same or less means rotations already capture it and the
 "lower bound" caveat can simply be dropped.
+
+### 5. Cross-version replication on jev-1.14.0 — about 13,000 calls
+
+New, and only possible because the version moved. Repeats the two arms the order finding
+rests on, against the updated model, writing to separate files so nothing already collected
+is touched:
+
+```sh
+python3 run_circular.py cyber bio --model-version jev-1.14.0 --out-prefix perm114
+python3 run_eval.py cyber bio --model-version jev-1.14.0 --tag v114
+```
+
+This answers a question we could not otherwise ask: is the 30.6% steerable fraction a
+property of one frozen snapshot, or does it survive a vendor update? Either answer is worth
+reporting. If the instability persists, the finding is about the architecture rather than
+one build; if it disappears, that is a concrete demonstration that these properties move
+under the user's feet without notice, which is itself the reproducibility argument.
 
 ---
 

@@ -25,6 +25,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 
+import jev_client
 from common import RAW
 from jev_client import (
     build_choice_payload,
@@ -187,7 +188,13 @@ def main():
                     help="reversed presents the options back to front; results are "
                          "reported against original indices so arms stay comparable")
     ap.add_argument("--tag", default=None, help="suffix for the output filename")
+    ap.add_argument("--model-version", default=None,
+                    help=f"pin a concrete model version (default {jev_client.MODEL}); "
+                         "the floating alias no longer reproduces the published runs")
     args = ap.parse_args()
+    if args.model_version:
+        jev_client.MODEL = args.model_version
+    print(f"model: {jev_client.MODEL}", file=sys.stderr)
 
     for subject in args.subjects:
         suffix = f"_{args.tag}" if args.tag else ""
