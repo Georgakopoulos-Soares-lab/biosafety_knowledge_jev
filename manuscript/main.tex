@@ -77,15 +77,15 @@ correct from incorrect predictions (pooled AUROC \statAurocPooled{}), but neithe
 figure is safe to deploy against: a cutoff set on WMDP-Bio to hold errors at
 \statThrTarget{} delivers \statThrBioWorst{} errors on \statThrBioWorstLabel{}, and on
 \statThrNUnachievable{} of \statThrNDatasets{} tasks no cutoff reaches that target at any
-coverage. Under four cyclic rotations of the answer options, \statInconsistCyber{} of
-WMDP-Cyber items receive different answers. Treating order as something an adversary
-controls, worst-case WMDP-Cyber accuracy falls from \statAtkSingleCyber{} to
-\statAtkWorstRotCyber{}, and \statAtkSteerRotCyber{} of items are correct under some
-orderings and incorrect under others; a budget-matched control using byte-identical
-repeated calls attributes \statAtkOrderDropCyber{} of that
-\statAtkDropRotCyber{}~percentage-point drop to order rather than run-to-run variation.
-Averaging across rotations recovers \statEnsGainCyber{}~percentage points, and applying it
-only to low-confidence items recovers most of that gain far more cheaply.
+coverage. Treating answer order as something an adversary controls, worst-case WMDP-Cyber
+accuracy falls from \statAtkSingleCyber{} to \statAtkWorstRotCyber{} and
+\statAtkSteerRotCyber{} of items are correct under some orderings and incorrect under
+others; a budget-matched control using byte-identical repeated calls attributes
+\statAtkOrderDropCyber{} of that \statAtkDropRotCyber{}~percentage-point drop to order
+rather than run-to-run variation, and the effect holds on all
+\statAtkNDatasets{} datasets tested, on option counts from 2 to 10, and across a vendor
+version update that leaves accuracy unchanged while altering
+\statVerDisagreeCyber{} of decisions.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -213,14 +213,12 @@ mapping each returned distribution back to the original option indices so that r
 are comparable.
 
 The endpoint reports token usage per response. The study consumed
-\statInputTokens{}~million input tokens over \statNCallsTotal{} calls, a mean of
-\statTokensPerCall{} per call; at \statUsdPerM{}~USD per million input tokens with no
-output charge, \statUsdTotal{}~USD in total. The same calls with a generative model, at
-list prices retrieved 2026-09-20, would cost \statLlmCheapUsd{}~USD for the cheapest small
-model emitting only an option label (\statLlmCheapRatio{}$\times$) and
-\statLlmTopUsd{}~USD at frontier prices with a short chain of thought
-(\statLlmTopRatio{}$\times$). These are upper bounds, since batch interfaces list at half
-rate and cached input at a tenth. We did not measure latency.
+\statInputTokens{}~million input tokens over \statNCallsTotal{} calls at
+\statUsdPerM{}~USD per million, with no output charge: \statUsdTotal{}~USD in total,
+against \statLlmCheapUsd{}--\statLlmTopUsd{}~USD for the same calls with a generative
+model at list prices retrieved 2026-09-20
+(\statLlmCheapRatio{}--\statLlmTopRatio{}$\times$). Those are upper bounds, since batch
+interfaces list at half rate and cached input at a tenth. We did not measure latency.
 
 \input{figs/table1_main.tex}
 
@@ -238,17 +236,14 @@ particular task at least as much as the model.
 
 Interpreting the model's uncertainty requires first establishing what the reported
 \texttt{confidence} field measures. Across all \statNItems{} records it matches
-\[
-c \;=\; \frac{\pmax - 1/n}{1 - 1/n}
-\]
-to within $\pm\statConfTol{}$ for \statConfMatch{} of records, where $n$ is the number of
-options. Competing readings fit less well: raw $\pmax$ matches \statConfAltPmax{}, the
-margin between the top two options \statConfAltMargin{}, and normalised entropy
-\statConfAltEntropy{}. The field is a rescaling of the top-1 probability onto $[0,1]$,
-mapping a uniform distribution to 0 and a one-hot distribution to 1; on a four-option item
-an even split between two candidates ($\pmax = 0.5$) is reported as \statConfExample{}. It
-is not a predicted probability of correctness, and calibration should be assessed against
-$\pmax$ instead.
+$c = (\pmax - 1/n)/(1 - 1/n)$, where $n$ is the number of options, to within
+$\pm\statConfTol{}$ for \statConfMatch{} of records. Competing readings fit less well: raw
+$\pmax$ matches \statConfAltPmax{}, the top-two margin \statConfAltMargin{}, and
+normalised entropy \statConfAltEntropy{}. The field rescales the top-1 probability onto
+$[0,1]$, mapping a uniform distribution to 0 and a one-hot one to 1, so on a four-option
+item an even split between two candidates ($\pmax = 0.5$) is reported as
+\statConfExample{}. It is not a predicted probability of correctness, and calibration
+should be assessed against $\pmax$.
 
 On that basis, pooled ECE is \statEcePmax{} (95\% CI $[\statEcePmaxLo{},
 \statEcePmaxHi{}]$; Brier \statBrierPmax{}), against \statEceConf{} when the rescaled
@@ -349,7 +344,7 @@ leaving \statReGapCyber{}~pp attributable to order, with \statReIdentBio{} and
 two-factor subsample agrees: within-rotation disagreement is \statReWithinCyber{} against
 \statReBetweenCyber{} between rotations on WMDP-Cyber, a ratio of
 \statReRatioCyber{}$\times$ (\statReRatioBio{}$\times$ on WMDP-Bio). The same design gives
-the matched-budget control for Section~\ref{sec:permavg}, since four identical calls cost
+the matched-budget control for averaging, since four identical calls cost
 what four rotations cost: averaging four identical calls changes WMDP-Cyber accuracy by
 \statReGainIdentCyber{}~pp with an interval spanning zero, against
 \statReGainRotCyber{}~pp for four rotations, a difference of \statReGainDiffCyber{}~pp
@@ -425,38 +420,32 @@ shift \statRevMaxAccChange{}~pp) while flipping \statRevFlipMin{}--\statRevFlipM
 predictions (Table~\ref{tab:main}): the aggregate is steady, the decisions under it are
 not.
 
-\subsection{Selective permutation averaging}
-\label{sec:permavg}
-
-Averaging the four inverse-permuted distributions raises WMDP-Cyber accuracy from
-\statSingleAccCyber{} to \statEnsAccCyber{} (\statEnsGainCyber{}~pp, 95\% CI
-$[\statEnsGainCyberLo{}, \statEnsGainCyberHi{}]$), and on WMDP-Bio, already
-\statConsistBio{} stable, by \statEnsGainBio{}~pp with an interval spanning zero: it helps
-where there is instability to average away. Because $\pmax$ predicts correctness it can
-also choose which items get the extra calls --- presenting the least confident 40\% under
-all four rotations reaches \statCascadeCyberAtForty{} at
-\statCascadeCyberCallsForty{} calls per item, \statCascadeFracOfGain{} of the gain from
-averaging everything at \statCascadeCostSaving{} lower cost, against
-\statCascadeCyberRandForty{} for random selection at the same budget, which no draw of 400
-beat. On WMDP-Bio random selection matches it, so we claim no benefit there. Full
-risk--cost curves are in the released analysis.
+Instability is also partly recoverable, by the obvious route. Averaging the four
+inverse-permuted distributions raises WMDP-Cyber accuracy from \statSingleAccCyber{} to
+\statEnsAccCyber{} (\statEnsGainCyber{}~pp, 95\% CI $[\statEnsGainCyberLo{},
+\statEnsGainCyberHi{}]$) and WMDP-Bio, already \statConsistBio{} stable, by
+\statEnsGainBio{}~pp with an interval spanning zero. Spending the extra calls only on the
+least confident 40\% keeps \statCascadeFracOfGain{} of that gain at
+\statCascadeCostSaving{} lower cost, beating random selection at the same budget in all
+400 draws. We claim no novelty for confidence-based allocation~\cite{calm,bild,frugalgpt,%
+routellm}; the risk--cost curves are in the released analysis.
 
 \subsection{The same model, after a vendor update}
 \label{sec:version}
 
 All of the above was collected against \texttt{\statVerPublished{}} through the alias
 \texttt{jev-latest}, which six weeks later resolves to \texttt{\statVerReplication{}} with
-no change to the identifier our runs named. An evaluation reached through an alias is
-therefore not reproducible; the endpoint accepts a concrete version and the released
-harness now pins one. Re-running both arms on the new version gives the one comparison
-available to us without a second vendor. Accuracy is unchanged (\statVerAccOldCyber{} to
+no change to the identifier our runs named, so an evaluation reached through an alias is
+not reproducible; the endpoint accepts a concrete version and the released harness now
+pins one. Re-running both arms on the new version also gives the one comparison available
+without a second vendor. Accuracy is unchanged (\statVerAccOldCyber{} to
 \statVerAccNewCyber{} on WMDP-Cyber, $p = \statVerPCyber{}$; \statVerAccOldBio{} to
 \statVerAccNewBio{} on WMDP-Bio, $p = \statVerPBio{}$), yet the versions disagree on
-\statVerDisagreeCyber{} and \statVerDisagreeBio{} of items, and the steerable fraction is
-largely retained (\statVerSteerOldCyber{} to \statVerSteerNewCyber{} on WMDP-Cyber,
-\statVerSteerOldBio{} to \statVerSteerNewBio{} on WMDP-Bio). The properties are not an
-artefact of one frozen build, though two versions of one vendor's model remain a weak
-substitute for a second system.
+\statVerDisagreeCyber{} and \statVerDisagreeBio{} of items and the steerable fraction is
+largely retained (\statVerSteerOldCyber{} to \statVerSteerNewCyber{};
+\statVerSteerOldBio{} to \statVerSteerNewBio{}). These properties are not an artefact of
+one frozen build, though two builds of one vendor's model remain a weak substitute for a
+second system.
 
 \section{Discussion and Limitations}
 
@@ -468,42 +457,39 @@ evaluation, and repeated inference is worth its cost where instability is high.
 
 \textbf{What this implies for a screening pipeline.} Suppose such a model sat in front of a
 human reviewer, auto-clearing confident items and escalating the rest. Three of our
-measurements bear on that design and none is visible in an accuracy figure. First, the
-threshold cannot come from pooled statistics; it must be fitted on held-out items from the
-task that will actually arrive, and on \statThrNUnachievable{} of \statThrNDatasets{} tasks
-no threshold reaches a \statThrTarget{} error rate at any coverage, so the correct decision
-there is not to automate. Second, the escalation rate is a budgeted cost: holding
-WMDP-Cyber to \statThrTarget{} errors leaves only \statThrCovCyber{} auto-cleared. Third,
-wherever the submitting party influences presentation --- option order here, any
-meaning-preserving formatting choice in general --- part of the decision is theirs to move,
-and \statAtkSteerRotCyber{} of WMDP-Cyber decisions are movable that way. Disagreement
-across re-presentations is the natural defence, flagging unreliable decisions and removing
-the attacker's control at once, and it is the one signal a single evaluation cannot
-produce. We did not test a deployed screening system; evaluating one needs a dedicated
-benign-versus-hazardous benchmark this study does not provide.
+measurements bear on that design and none is visible in an accuracy figure. The threshold
+cannot come from pooled statistics; it must be fitted on held-out items from the task that
+will actually arrive, and on \statThrNUnachievable{} of \statThrNDatasets{} tasks no
+threshold reaches a \statThrTarget{} error rate at any coverage, so the correct decision
+there is not to automate. The escalation rate is a budgeted cost: holding WMDP-Cyber to
+\statThrTarget{} errors leaves only \statThrCovCyber{} auto-cleared. And wherever the
+submitting party influences presentation, part of the decision is theirs to move ---
+\statAtkSteerRotCyber{} of WMDP-Cyber decisions. Disagreement across re-presentations is
+the natural defence, flagging unreliable decisions and removing that control at once, and
+it is the one signal a single evaluation cannot produce. We did not test a deployed
+screening system; evaluating one needs a benign-versus-hazardous benchmark this study does
+not provide.
 
 \subsection{Limitations}
 
 We evaluate one proprietary closed-weight model exposing no seed, so these results do not
-generalise to System-1 models as a class and exact reproduction depends on vendor
-behaviour. The protocol is not specific to it: it needs only a system returning a
+generalise to System-1 models as a class, and two builds of it are a weak substitute for a
+second vendor. The protocol is not specific to it: it needs only a system returning a
 probability distribution over the options it was given, which the released harness puts
 behind one client interface, so whether these magnitudes hold across vendors is open and is
-the first thing we would test given a second such system. We evaluate no biosafety or
+the first thing we would test given access. We evaluate no biosafety or
 hazard-classification task, and multiple-choice questions are only a proxy for the
 knowledge they probe; label quality in biology-adjacent sets can be poor~\cite{mmluredux}
-and we did not audit it, nor can contamination be excluded. We did not measure latency or
-run a larger model as a fallback. Our instability figures are a lower bound because they
-sample four presentations out of $n!$, not because rotations are an unrepresentative
-subset: Section~\ref{sec:attack} tests that directly and finds no difference. Three
-LAB-Bench subtasks carry no cyclic run, and the per-rotation comparisons of
-Section~\ref{sec:repeat} need a common option count, so \statCircMixedList{} appear in
-Table~\ref{tab:order} but not there. The label and format ablations were run on WMDP-Bio
-and WMDP-Cyber only. Probabilities are quantised to two decimals and several LAB-Bench
+and we did not audit it, nor can contamination be excluded. We did not measure latency.
+Our instability figures are a lower bound because they sample four presentations out of
+$n!$, not because rotations are unrepresentative: Section~\ref{sec:attack} tests that and
+finds no difference. Three LAB-Bench subtasks carry no cyclic run, and the per-rotation
+comparisons of Section~\ref{sec:repeat} need a common option count, so
+\statCircMixedList{} appear in Table~\ref{tab:order} but not there; the ablations were run
+on WMDP-Bio and WMDP-Cyber only. Probabilities are quantised to two decimals and several
 high-confidence subsets hold fewer than 25 items, so we report intervals throughout.
-Worst-case accuracies (Section~\ref{sec:attack}) assume an adversary who can identify the
-least favourable ordering, which requires knowing the correct answer; they bound the
-surface rather than describing a realisable attack.
+Worst-case accuracies assume an adversary who can identify the least favourable ordering,
+which needs the correct answer.
 
 \section{Conclusion}
 
@@ -513,20 +499,18 @@ figures. The vendor's uncertainty field does not mean what its name suggests, an
 calibration against it is wrong by nearly a factor of three. A confidence cutoff fitted on
 one task misses its error target by up to \statThrBioWorstRatio{}$\times$ on another, and
 on \statThrNUnachievable{} of \statThrNDatasets{} tasks no cutoff works at all. Option
-order, which carries no meaning, moves \statAtkSteerRotCyber{} of WMDP-Cyber decisions, and
-a budget-matched control shows this is the ordering and not a noisy endpoint. Averaging
-over orderings recovers much of the lost accuracy, cheaply if applied only to low-confidence
-items. Confidence and stability under re-presentation are complementary evidence about when
-such a model should be trusted, and neither is visible in a single accuracy figure.
+order, which carries no meaning, moves \statAtkSteerRotCyber{} of WMDP-Cyber decisions,
+and budget-matched controls show this is the ordering, not a noisy endpoint. Confidence
+and stability under re-presentation are complementary evidence about when such a model
+should be trusted, and neither is visible in a single accuracy figure.
 
 \section*{Acknowledgment} Supported by start-up funds awarded to I.G.S. We thank TypeSafe
-for API access; the vendor had no role in the design, analysis, or conclusions of this
-study and did not review this manuscript before submission.
-\section*{Ethics, Conflict of Interest, and Code Availability} This study authored no new
-hazardous technical content: all items come from existing public benchmarks, and we release
-model decision records but no new question content. We reported the \texttt{confidence}
-field semantics to the vendor as a documentation issue. The authors declare no competing
-interests. \sloppy Records, code and manuscript source are at
+for API access; the vendor had no role in the design, analysis or conclusions and did not
+review this manuscript.
+\section*{Ethics and Availability} This study authored no new hazardous content: all items
+come from existing public benchmarks, and we release decision records but no new question
+content. We reported the \texttt{confidence} field semantics to the vendor as a
+documentation issue, and declare no competing interests. \sloppy Records, code and source:
 \url{https://github.com/Georgakopoulos-Soares-lab/biosafety_knowledge_jev}.
 
 {\footnotesize

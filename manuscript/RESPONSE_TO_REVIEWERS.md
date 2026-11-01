@@ -1,10 +1,15 @@
 # Response to reviewers — BioAISS 2026 (ACSAC workshop)
 
 We thank both reviewers. Every point below is answered with a change in the paper, and
-each change is named with the section it landed in. Two new results were added. Both are
-computed from the decision records already released with the first submission, so they can
-be checked today against the public repository — no new data collection stands behind
-them.
+each change is named with the section it landed in. Five new results were added: two
+recomputed from the decision records already released with the first submission, and three
+from 43,000 further API calls. Every number is produced by the released pipeline, and the
+build fails if the text cites a value the pipeline did not emit.
+
+Two of the new results corrected us rather than the reviewers. A matched control refuted
+an explanation this paper had itself written into its limitations, and a draft of the
+threshold table quoted a 100% error rate that rested on three items. Both are described
+below, because a revision that only reports what went well is not worth reading.
 
 Where we could not do what a reviewer asked, we say so plainly rather than substituting
 something else and hoping it passes.
@@ -62,12 +67,23 @@ own framing did, which is part of why we rewrote the framing.
 > *"including another lightweight model or a representative generative baseline would help
 > establish whether the observed instability is specific to the evaluated model."*
 
-**This is the one request we could not meet, and we would rather say so than pretend
-otherwise.** We did not have access to a second comparable system during the revision
-period. We did not want to substitute a loosely comparable model and present it as
-settling the question, because it would not.
+**We could not obtain a second vendor's model, but the revision period handed us a
+partial answer we did not expect.** The alias our runs used, `jev-latest`, has moved from
+`jev-1.13.0` to `jev-1.14.0`. We re-ran both arms against the new version, pinned.
 
-What we did instead, in the limitations section:
+The result is the same pattern the paper is about. Accuracy is unchanged on both suites
+(WMDP-Cyber *p* = 0.43, WMDP-Bio *p* = 1.0), yet the two versions give different answers
+on 13.9% and 4.6% of items, and the steerable fraction is retained (0.306 to 0.260 on
+WMDP-Cyber, unchanged at 0.095 on WMDP-Bio). So these properties are not an artefact of
+one frozen build. Two builds of one vendor's model remain a weak substitute for a second
+vendor, and Section 4.7 says exactly that.
+
+This also surfaced a reproducibility problem worth reporting on its own: a hosted model
+moved under a published evaluation within six weeks, with no change to the identifier the
+original runs named. Any result collected through a floating alias is not reproducible.
+The released harness now pins a concrete version, and the paper says so.
+
+Alongside that, in the limitations section:
 
 - **We state the limit precisely.** Whether these magnitudes hold across vendors is open,
   and it is the first thing we would test given a second system.
@@ -139,28 +155,46 @@ task it will run on, or do not use a threshold.
 > *"The permutation analysis is primarily restricted to four cyclic rotations of four-option
 > multiple-choice questions."*
 
-**The reviewer is right, and we can now say why the restriction matters rather than only
-that it exists.** Four rotations are 4 of the 24 possible orderings, and they all share a
-property: they never change which option follows which. So a rotation-only measurement
-cannot detect any sensitivity that depends on two options sitting next to each other. The
-instability we report is a lower bound for that reason as well as for covering only
-four-option items, and the limitations section now says so.
+**The reviewer is right, and we have now run the experiments rather than argue about
+them.** Four further arms, 43,000 additional calls:
 
-We have implemented and released the apparatus to close this, as four additions to the
-collection harness:
+**The order effect is not confined to four-option questions.** It now covers seven
+datasets with the matched control on every one, including two whose option counts run from
+2 to 10. Steerable items attributable to order, over the byte-identical control:
 
-- every one of the 24 orderings, on a seeded sample of four-option items;
-- rotations on WMDP-Chem and WMDP-Bio-Robust, extending the result from two of the four
-  WMDP suites to all four;
-- rotations on three LAB-Bench tasks, which carry 2 to 10 options and therefore take the
-  measurement **off four-option multiple choice entirely**;
-- a reversed-order arm on all 10 datasets, which is the cheapest ordering outside the
-  rotation family and runs on the wide items too.
+| dataset | options | steerable (noise) | steerable (+order) | due to order |
+|---|---|---|---|---|
+| WMDP-Bio | 4 | 0.020 | 0.095 | +7.5 pp |
+| WMDP-Bio-Robust | 4 | 0.030 | 0.104 | +7.4 pp |
+| WMDP-Chem | 4 | 0.042 | 0.154 | +11.3 pp |
+| WMDP-Cyber | 4 | 0.065 | 0.306 | +24.2 pp |
+| LB-SeqQA | **2–5** | 0.083 | 0.295 | +21.2 pp |
+| LB-DbQA | 4 | 0.058 | **0.327** | +26.9 pp |
+| LB-LitQA2 | **2–10** | 0.020 | 0.206 | +18.6 pp |
 
-The permutation and inversion logic is covered by tests that confirm every ordering maps
-back to the original option indices. We did not want to report numbers from these arms
-before the data was collected, so the paper states the limitation honestly and the harness
-is in the repository.
+The interval excludes zero on all seven. Two consequences we could not state before:
+WMDP-Cyber is **not** the worst case (LB-DbQA is), and robustness to paraphrase buys no
+robustness to reordering — WMDP-Bio-Robust, a set built for robustness, is no steadier
+under reordering than WMDP-Bio.
+
+**A reversed presentation, on all ten datasets.** No dataset's accuracy moves (none
+significant after Benjamini–Hochberg, largest shift 9.8 pp) while 6.8% to 34.2% of
+individual predictions flip. Reversal is not a rotation for more than two options, so this
+covers non-cyclic orderings on every dataset, including the three too small or too wide
+for a rotation sweep. It is now a column in Table 1.
+
+**Every one of the 24 orderings, and a correction to ourselves.** We had written into the
+limitations that rotations under-count *because* they preserve which option follows which.
+We built a matched control to test it — four rotations against four randomly chosen
+non-rotations, equal budget — and it refutes the claim: −2.0 pp on WMDP-Cyber (95% CI
+[−4.8, +0.8]) and −0.2 pp on WMDP-Bio ([−2.4, +2.0]), both straddling zero. Rotations are
+representative of orderings in general. Our figures understate instability only because
+four presentations are fewer than 24 (46.8% of WMDP-Cyber items inconsistent across all
+24, against 37.2% across the rotations).
+
+We report this because the unmatched comparison alone — 24 orderings find more than 4 —
+would have appeared to confirm the explanation we started with. It does not. The adjacency
+claim has been removed from the paper.
 
 ---
 
@@ -178,7 +212,9 @@ is in the repository.
 | Portable-protocol statement and sharpened one-model limit | 5.1 | 11B-1 |
 | Self-correction of three earlier results made visible | 4.4 | 11A |
 
-The paper remains within the 6-page limit. Nothing was dropped to make room: the space came
-from merging the two figures into one, folding the instability chart into Table 2 which
-carries the same comparison plus two more columns, and tightening prose. All 12 automated
-consistency checks pass, including 5 added for the new results.
+The paper remains within the 6-page limit. No result was dropped to make room: the space
+came from merging the two figures into one, folding the instability chart into Table 2
+(which carries the same comparison plus two more columns), moving the reversal result into
+Table 1 as a column, compressing the selective-averaging section to a paragraph, and
+tightening prose throughout. All 12 automated consistency checks pass, including five added
+for the new results, and the analysis is byte-identical on re-run.
