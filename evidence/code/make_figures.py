@@ -18,7 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from common import DERIVED, FIGURES, LABEL, load_all, wilson
+from common import DERIVED, FIGURES, LABEL, load_all
 
 plt.rcParams.update({
     # Type 42 (TrueType) rather than matplotlib's default Type 3: IEEE PDF eXpress

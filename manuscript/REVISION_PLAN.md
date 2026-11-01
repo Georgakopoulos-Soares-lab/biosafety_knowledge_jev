@@ -2,8 +2,9 @@
 
 Reviews in hand: **11A weak reject** (knowledgeable), **11B accept** (knowledgeable).
 Decision context: revision / camera-ready at the same venue. **6-page body limit stands.**
-Model access: TypeSafe (Jev) only. No second vendor. The Laya and OpenAI comparison work
-is retired (see §8).
+Model access: TypeSafe (Jev) only, no second vendor. An earlier comparison against other
+decision APIs was retired and deleted without ever being run; nothing in the paper depends
+on it (see §8).
 
 ---
 
@@ -357,26 +358,16 @@ answered and that no claim outruns its evidence.
 
 ---
 
-## 8. Housekeeping — retiring the comparison work
+## 8. Housekeeping — done
 
-Per your instruction, the Laya comparison is dropped. Two notes before anything is deleted:
+An earlier comparison harness targeting other decision APIs was retired and deleted. None
+of it was ever run, no result in the paper depends on it, and the `comparison/` tree is
+gone from the repository.
 
-- `comparison/` is **814 MB and entirely untracked by git**, so removing it cannot be
-  undone. It also contains the OpenAI `/v1/decisions` scaffolding, which is separate from
-  Laya. Separately: I was unable to verify that the `/v1/decisions` endpoint and the
-  `gpt-6-luna` model in that code are real — the code was written against an unpublished
-  schema and `probe_openai.py` exists precisely because it was never confirmed. That is
-  another reason not to pursue it.
-- **Recommendation:** move `comparison/` outside the repo rather than delete it
-  (`mv comparison ~/archive/wmdp_jev_comparison`). It costs nothing, and the 804 MB
-  checkpoint is slow to re-fetch if the question ever comes back.
-
-Also tidy before submission: `.DS_Store` files are untracked at the repo root and under
-`evidence/`, the root `main.tex` is deleted but not staged, and
-`manuscript/arxiv_submission/` plus `arxiv_submission.zip` will go stale the moment the
-revision changes the text — regenerate them at the end, not now.
-
----
+What replaced it as the answer to "only one model" is the cross-version arm (W5a, which
+fired): the vendor alias moved from `jev-1.13.0` to `jev-1.14.0` during the revision, so
+re-running against the new build gives a genuine second system in the only sense available
+to us. See `evidence/RUNBOOK_R1.md`.
 
 ## 9. What we deliberately do not do
 
