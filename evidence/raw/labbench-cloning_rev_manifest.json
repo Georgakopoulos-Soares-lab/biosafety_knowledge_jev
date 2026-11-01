@@ -1,0 +1,12 @@
+{
+  "run": "labbench-cloning:positional:both",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model_alias": "jev-1.13.0",
+  "model_version": "jev-1.13.0",
+  "started_utc": "2026-11-01T15:19:56+00:00",
+  "finished_utc": "2026-11-01T15:19:58+00:00",
+  "n_calls": 33,
+  "label_mode": "positional",
+  "format_mode": "both",
+  "input_tokens": 193722
+}

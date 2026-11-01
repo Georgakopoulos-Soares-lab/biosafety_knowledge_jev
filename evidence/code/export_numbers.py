@@ -356,6 +356,55 @@ def build():
     M["statCircNDatasets"] = str(len(atk))
     M["statCircMixedList"] = ", ".join(LABEL[k] for k in a5m.get("excluded_mixed_width", []))
 
+    # ---- A15: the rotation subset against every ordering
+    a15 = S.get("a15_full_permutations", {})
+    for key, tag in (("cyber", "Cyber"), ("bio", "Bio")):
+        e = a15.get(key)
+        if not e:
+            continue
+        M[f"statPermNItems{tag}"] = comma(e["n_items"])
+        M[f"statPermNOrderings{tag}"] = str(e["n_orderings"])
+        M[f"statPermCyclic{tag}"] = pct(e["arms"]["cyclic"]["inconsistency"])
+        M[f"statPermNonCyclic{tag}"] = pct(e["arms"]["noncyclic"]["inconsistency"])
+        M[f"statPermAll{tag}"] = pct(e["arms"]["all"]["inconsistency"])
+        M[f"statPermSteerAll{tag}"] = pct(e["arms"]["all"]["steerable_fraction"])
+        M[f"statPermWorstAll{tag}"] = pct(e["arms"]["all"]["worst_case_accuracy"])
+        m = e["matched"]
+        M[f"statPermMatchedDiff{tag}"] = pp(m["noncyclic_minus_cyclic"])
+        M[f"statPermMatchedCI{tag}"] = f"[{pp(m['ci'][0])}, {pp(m['ci'][1])}]"
+        M[f"statPermUndercount{tag}"] = num(e["undercount_ratio"], 1)
+
+    # ---- A16: one reversed presentation, every dataset
+    a16 = S.get("a16_reversal", {}).get("summary")
+    if a16:
+        M["statRevNDatasets"] = str(a16["n_datasets"])
+        M["statRevFlipMin"] = pct(a16["flip_rate_min"])
+        M["statRevFlipMax"] = pct(a16["flip_rate_max"])
+        M["statRevMaxAccChange"] = ppu(a16["max_abs_accuracy_change_pp"] / 100)
+        M["statRevNChanged"] = ("none" if a16["n_datasets_accuracy_changed"] == 0
+                                else str(a16["n_datasets_accuracy_changed"]))
+
+    # ---- A17: the same product after a vendor update
+    a17 = S.get("a17_version_replication", {})
+    if a17.get("summary"):
+        sm = a17["summary"]
+        M["statVerPublished"] = a17["meta"]["published_version"]
+        M["statVerReplication"] = a17["meta"]["replication_version"]
+        M["statVerAnyAccChanged"] = "no" if not sm["any_accuracy_changed"] else "yes"
+        M["statVerDisagreeMin"] = pct(sm["min_prediction_disagreement"])
+        M["statVerDisagreeMax"] = pct(sm["max_prediction_disagreement"])
+        for key, tag in (("cyber", "Cyber"), ("bio", "Bio")):
+            e = a17["per_dataset"].get(key)
+            if not e:
+                continue
+            M[f"statVerAccOld{tag}"] = pct(e["acc_published"])
+            M[f"statVerAccNew{tag}"] = pct(e["acc_replication"])
+            M[f"statVerDisagree{tag}"] = pct(e["prediction_disagreement"])
+            M[f"statVerP{tag}"] = f"{e['mcnemar_p']:.2g}"
+            if "order_sensitivity" in e:
+                M[f"statVerSteerOld{tag}"] = pct(e["order_sensitivity"]["published"]["steerable_fraction"])
+                M[f"statVerSteerNew{tag}"] = pct(e["order_sensitivity"]["replication"]["steerable_fraction"])
+
     # ---- A14: confidence cutoffs across tasks
     ach = a14["achievable"]
     M["statThrTarget"] = pct(a14["meta"]["target_error"], 0)

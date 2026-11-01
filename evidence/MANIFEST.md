@@ -12,7 +12,7 @@ Raw inputs
                                          original option indices
 ```
 
-256 macros defined in `manuscript/numbers.tex`.
+298 macros defined in `manuscript/numbers.tex`.
 
 | macro | value | stats.json block | produced by |
 |---|---|---|---|
@@ -266,6 +266,51 @@ Raw inputs
 | `\statAtkWorstSteer` | 32.7% | `` | `` |
 | `\statCircNDatasets` | 7 | `` | `` |
 | `\statCircMixedList` | LB-SeqQA, LB-LitQA2 | `` | `` |
+| **A15: the rotation subset against every ordering** | | | |
+| `\statPermNItemsBio` | 500 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermNItemsCyber` | 500 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermNOrderingsBio` | 24 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermNOrderingsCyber` | 24 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermCyclicBio` | 11.0% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermCyclicCyber` | 37.2% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermNonCyclicBio` | 10.8% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermNonCyclicCyber` | 35.2% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermAllBio` | 17.4% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermAllCyber` | 46.8% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermSteerAllBio` | 15.8% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermSteerAllCyber` | 39.8% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermWorstAllBio` | 74.8% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermWorstAllCyber` | 43.8% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermMatchedDiffBio` | -0.2 | `` | `` |
+| `\statPermMatchedDiffCyber` | -2.0 | `` | `` |
+| `\statPermMatchedCIBio` | [-2.4, +2.0] | `` | `` |
+| `\statPermMatchedCICyber` | [-4.8, +0.8] | `` | `` |
+| `\statPermUndercountBio` | 1.6 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statPermUndercountCyber` | 1.3 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| **A16: one reversed presentation, every dataset** | | | |
+| `\statRevNDatasets` | 10 | `` | `` |
+| `\statRevFlipMin` | 6.8% | `` | `` |
+| `\statRevFlipMax` | 34.2% | `` | `` |
+| `\statRevMaxAccChange` | 9.8 | `` | `` |
+| `\statRevNChanged` | none | `` | `` |
+| **A17: the same product after a vendor update** | | | |
+| `\statVerPublished` | jev-1.13.0 | `` | `` |
+| `\statVerReplication` | jev-1.14.0 | `` | `` |
+| `\statVerAnyAccChanged` | no | `` | `` |
+| `\statVerDisagreeMin` | 4.6% | `` | `` |
+| `\statVerDisagreeMax` | 13.9% | `` | `` |
+| `\statVerAccOldBio` | 85.2% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerAccOldCyber` | 63.4% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerAccNewBio` | 85.1% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerAccNewCyber` | 64.0% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerDisagreeBio` | 4.6% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerDisagreeCyber` | 13.9% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerPBio` | 1 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerPCyber` | 0.43 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerSteerOldBio` | 9.5% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerSteerOldCyber` | 30.6% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerSteerNewBio` | 9.5% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statVerSteerNewCyber` | 26.0% | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
 | **A14: confidence cutoffs across tasks** | | | |
 | `\statThrTarget` | 5% | `` | `` |
 | `\statThrNAchievable` | 5 | `` | `` |

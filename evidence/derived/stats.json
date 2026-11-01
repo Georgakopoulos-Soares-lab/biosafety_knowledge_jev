@@ -1710,6 +1710,476 @@
       }
     }
   },
+  "a15_full_permutations": {
+    "bio": {
+      "arms": {
+        "all": {
+          "inconsistency": 0.174,
+          "inconsistency_ci": [
+            0.14328947208106416,
+            0.20968159789986787
+          ],
+          "n_orderings": 24,
+          "steerable_ci": [
+            0.1286526978644355,
+            0.19256235101126623
+          ],
+          "steerable_fraction": 0.158,
+          "worst_case_accuracy": 0.748,
+          "worst_case_ci": [
+            0.7081521755124419,
+            0.7840661516186281
+          ]
+        },
+        "cyclic": {
+          "inconsistency": 0.11,
+          "inconsistency_ci": [
+            0.0854914151566031,
+            0.14045557040340767
+          ],
+          "n_orderings": 4,
+          "steerable_ci": [
+            0.08019420676989107,
+            0.1338442708756583
+          ],
+          "steerable_fraction": 0.104,
+          "worst_case_accuracy": 0.778,
+          "worst_case_ci": [
+            0.739530218085007,
+            0.8122306486183701
+          ]
+        },
+        "noncyclic": {
+          "inconsistency": 0.108,
+          "inconsistency_ci": [
+            0.08372280963705037,
+            0.13825467328480662
+          ],
+          "n_orderings": 4,
+          "steerable_ci": [
+            0.07667756273730172,
+            0.1294219096319401
+          ],
+          "steerable_fraction": 0.1,
+          "worst_case_accuracy": 0.782,
+          "worst_case_ci": [
+            0.743733598415673,
+            0.8159662735640116
+          ]
+        }
+      },
+      "matched": {
+        "ci": [
+          -0.024000000000000007,
+          0.01999999999999999
+        ],
+        "indistinguishable": true,
+        "noncyclic_minus_cyclic": -0.0020000000000000018,
+        "noncyclic_more_unstable": false
+      },
+      "n_calls": 12000,
+      "n_items": 500,
+      "n_orderings": 24,
+      "undercount_ratio": 1.5818181818181818,
+      "unmatched": {
+        "all_minus_cyclic": 0.06399999999999999,
+        "ci": [
+          0.044,
+          0.08600000000000001
+        ]
+      }
+    },
+    "cyber": {
+      "arms": {
+        "all": {
+          "inconsistency": 0.468,
+          "inconsistency_ci": [
+            0.4246740659219794,
+            0.5118138918675601
+          ],
+          "n_orderings": 24,
+          "steerable_ci": [
+            0.35602997790389446,
+            0.4415253875502624
+          ],
+          "steerable_fraction": 0.398,
+          "worst_case_accuracy": 0.438,
+          "worst_case_ci": [
+            0.39514834408666566,
+            0.48179707413056694
+          ]
+        },
+        "cyclic": {
+          "inconsistency": 0.372,
+          "inconsistency_ci": [
+            0.3307607484885237,
+            0.4151910826696337
+          ],
+          "n_orderings": 4,
+          "steerable_ci": [
+            0.26339155087985655,
+            0.3436276879429182
+          ],
+          "steerable_fraction": 0.302,
+          "worst_case_accuracy": 0.496,
+          "worst_case_ci": [
+            0.45237314911404547,
+            0.539687845609647
+          ]
+        },
+        "noncyclic": {
+          "inconsistency": 0.352,
+          "inconsistency_ci": [
+            0.31141084189074275,
+            0.3948459628858768
+          ],
+          "n_orderings": 4,
+          "steerable_ci": [
+            0.22348572318538285,
+            0.3001739602361623
+          ],
+          "steerable_fraction": 0.26,
+          "worst_case_accuracy": 0.508,
+          "worst_case_ci": [
+            0.46428581664185803,
+            0.5515921939107572
+          ]
+        }
+      },
+      "matched": {
+        "ci": [
+          -0.04800000000000004,
+          0.008000000000000007
+        ],
+        "indistinguishable": true,
+        "noncyclic_minus_cyclic": -0.020000000000000018,
+        "noncyclic_more_unstable": false
+      },
+      "n_calls": 12000,
+      "n_items": 500,
+      "n_orderings": 24,
+      "undercount_ratio": 1.2580645161290323,
+      "unmatched": {
+        "all_minus_cyclic": 0.09600000000000003,
+        "ci": [
+          0.07195,
+          0.122
+        ]
+      }
+    },
+    "meta": {
+      "matched_comparison": "4 rotations vs 4 seeded non-rotation orderings, equal budget",
+      "unmatched_comparison": "4 rotations vs all n! orderings; more draws means more chances to disagree, so this bounds practice, not theory"
+    }
+  },
+  "a16_reversal": {
+    "meta": {
+      "design": "one reversed presentation per item, paired with baseline",
+      "note": "reversal is not a rotation for n > 2"
+    },
+    "per_dataset": {
+      "bio": {
+        "acc_baseline": 0.8515318146111548,
+        "acc_diff": -0.002356637863315081,
+        "acc_diff_ci": [
+          -0.014925373134328401,
+          0.01021209740769835
+        ],
+        "acc_reversed": 0.8491751767478397,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "WMDP-Bio",
+        "mcnemar_p": 0.8099490529189248,
+        "mcnemar_q_bh": 0.8999433921321387,
+        "n": 1273,
+        "n_discordant": 69,
+        "prediction_flip_ci": [
+          0.05503007190227259,
+          0.08268589714458417
+        ],
+        "prediction_flip_rate": 0.06755695208169678
+      },
+      "bio-robust": {
+        "acc_baseline": 0.8014796547472256,
+        "acc_diff": 0.0036991368680641123,
+        "acc_diff_ci": [
+          -0.013563501849568449,
+          0.022194821208384674
+        ],
+        "acc_reversed": 0.8051787916152897,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "WMDP-Bio-Robust",
+        "mcnemar_p": 0.7838463022094988,
+        "mcnemar_q_bh": 0.8999433921321387,
+        "n": 811,
+        "n_discordant": 53,
+        "prediction_flip_ci": [
+          0.06778007705870095,
+          0.10629238487270198
+        ],
+        "prediction_flip_rate": 0.08508014796547472
+      },
+      "chem": {
+        "acc_baseline": 0.7303921568627451,
+        "acc_diff": 0.02450980392156865,
+        "acc_diff_ci": [
+          -0.004901960784313708,
+          0.0539215686274509
+        ],
+        "acc_reversed": 0.7549019607843137,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "WMDP-Chem",
+        "mcnemar_p": 0.13249816396273675,
+        "mcnemar_q_bh": 0.33727508783340454,
+        "n": 408,
+        "n_discordant": 36,
+        "prediction_flip_ci": [
+          0.09853206835978501,
+          0.16331980815963482
+        ],
+        "prediction_flip_rate": 0.12745098039215685
+      },
+      "cyber": {
+        "acc_baseline": 0.634121791645697,
+        "acc_diff": 0.009562154001006573,
+        "acc_diff_ci": [
+          -0.009058882737795648,
+          0.02767991947659787
+        ],
+        "acc_reversed": 0.6436839456467036,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "WMDP-Cyber",
+        "mcnemar_p": 0.3268333622992579,
+        "mcnemar_q_bh": 0.5447222704987632,
+        "n": 1987,
+        "n_discordant": 337,
+        "prediction_flip_ci": [
+          0.24922407338891148,
+          0.2881574715254845
+        ],
+        "prediction_flip_rate": 0.2682435832913941
+      },
+      "labbench-cloning": {
+        "acc_baseline": 0.46875,
+        "acc_diff": -0.0625,
+        "acc_diff_ci": [
+          -0.1875,
+          0.0625
+        ],
+        "acc_reversed": 0.40625,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "LB-CloningScenarios",
+        "mcnemar_p": 0.625,
+        "mcnemar_q_bh": 0.8928571428571429,
+        "n": 32,
+        "n_discordant": 4,
+        "prediction_flip_ci": [
+          0.15564580497742764,
+          0.45374509425916565
+        ],
+        "prediction_flip_rate": 0.28125
+      },
+      "labbench-db": {
+        "acc_baseline": 0.39807692307692305,
+        "acc_diff": -0.0346153846153846,
+        "acc_diff_ci": [
+          -0.07115384615384612,
+          0.0
+        ],
+        "acc_reversed": 0.36346153846153845,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "LB-DbQA",
+        "mcnemar_p": 0.07254953219246177,
+        "mcnemar_q_bh": 0.33727508783340454,
+        "n": 520,
+        "n_discordant": 90,
+        "prediction_flip_ci": [
+          0.3028156676537707,
+          0.38411251025485177
+        ],
+        "prediction_flip_rate": 0.3423076923076923
+      },
+      "labbench-litqa2": {
+        "acc_baseline": 0.4020100502512563,
+        "acc_diff": 0.040201005025125636,
+        "acc_diff_ci": [
+          -0.010050251256281395,
+          0.09045226130653267
+        ],
+        "acc_reversed": 0.44221105527638194,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "LB-LitQA2",
+        "mcnemar_p": 0.16863754391670227,
+        "mcnemar_q_bh": 0.33727508783340454,
+        "n": 199,
+        "n_discordant": 26,
+        "prediction_flip_ci": [
+          0.18251363841840812,
+          0.29984070565670073
+        ],
+        "prediction_flip_rate": 0.23618090452261306
+      },
+      "labbench-protocol": {
+        "acc_baseline": 0.5370370370370371,
+        "acc_diff": 0.0,
+        "acc_diff_ci": [
+          -0.07407407407407407,
+          0.07407407407407407
+        ],
+        "acc_reversed": 0.5370370370370371,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "LB-ProtocolQA",
+        "mcnemar_p": 1.0,
+        "mcnemar_q_bh": 1.0,
+        "n": 108,
+        "n_discordant": 16,
+        "prediction_flip_ci": [
+          0.16991188997445456,
+          0.3293793335978342
+        ],
+        "prediction_flip_rate": 0.24074074074074073
+      },
+      "labbench-seq": {
+        "acc_baseline": 0.6183333333333333,
+        "acc_diff": 0.02833333333333332,
+        "acc_diff_ci": [
+          -0.00666666666666671,
+          0.06333333333333335
+        ],
+        "acc_reversed": 0.6466666666666666,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "LB-SeqQA",
+        "mcnemar_p": 0.13535040983481553,
+        "mcnemar_q_bh": 0.33727508783340454,
+        "n": 600,
+        "n_discordant": 115,
+        "prediction_flip_ci": [
+          0.25990668214519635,
+          0.332701615270421
+        ],
+        "prediction_flip_rate": 0.295
+      },
+      "labbench-supp": {
+        "acc_baseline": 0.36585365853658536,
+        "acc_diff": 0.09756097560975613,
+        "acc_diff_ci": [
+          0.0,
+          0.1951219512195122
+        ],
+        "acc_reversed": 0.4634146341463415,
+        "accuracy_changed": false,
+        "accuracy_changed_bh": false,
+        "label": "LB-SuppQA",
+        "mcnemar_p": 0.09625244140625,
+        "mcnemar_q_bh": 0.33727508783340454,
+        "n": 82,
+        "n_discordant": 18,
+        "prediction_flip_ci": [
+          0.24799344936511664,
+          0.44912260204881777
+        ],
+        "prediction_flip_rate": 0.34146341463414637
+      }
+    },
+    "summary": {
+      "accuracy_stable_predictions_not": true,
+      "flip_rate_max": 0.3423076923076923,
+      "flip_rate_min": 0.06755695208169678,
+      "max_abs_accuracy_change_pp": 9.756097560975613,
+      "n_datasets": 10,
+      "n_datasets_accuracy_changed": 0
+    }
+  },
+  "a17_version_replication": {
+    "meta": {
+      "published_version": "jev-1.13.0",
+      "replication_version": "jev-1.14.0",
+      "why": "the alias moved; pinning is required for reproducibility"
+    },
+    "per_dataset": {
+      "bio": {
+        "acc_diff": -0.0007855459544383603,
+        "acc_diff_ci": [
+          -0.010997643362136711,
+          0.00942655145325999
+        ],
+        "acc_published": 0.8515318146111548,
+        "acc_replication": 0.8507462686567164,
+        "accuracy_changed": false,
+        "mcnemar_p": 1.0,
+        "n": 1273,
+        "order_sensitivity": {
+          "published": {
+            "inconsistency": 0.10604870384917518,
+            "n": 1273,
+            "steerable_fraction": 0.09505106048703849,
+            "worst_case_accuracy": 0.7996857816182247
+          },
+          "replication": {
+            "inconsistency": 0.10369206598586017,
+            "n": 1273,
+            "steerable_fraction": 0.09505106048703849,
+            "worst_case_accuracy": 0.802827965435978
+          },
+          "steerable_change": 0.0,
+          "survives": true
+        },
+        "prediction_disagreement": 0.04556166535742341,
+        "prediction_disagreement_ci": [
+          0.03540936456656346,
+          0.058448379472685635
+        ]
+      },
+      "cyber": {
+        "acc_diff": 0.006039255158530432,
+        "acc_diff_ci": [
+          -0.00805234021137391,
+          0.01962757926522396
+        ],
+        "acc_published": 0.634121791645697,
+        "acc_replication": 0.6401610468042275,
+        "accuracy_changed": false,
+        "mcnemar_p": 0.43211123425427017,
+        "n": 1987,
+        "order_sensitivity": {
+          "published": {
+            "inconsistency": 0.3744338198288878,
+            "n": 1987,
+            "steerable_fraction": 0.3064921992954202,
+            "worst_case_accuracy": 0.4921992954202315
+          },
+          "replication": {
+            "inconsistency": 0.3301459486663312,
+            "n": 1987,
+            "steerable_fraction": 0.25968797181680925,
+            "worst_case_accuracy": 0.521389028686462
+          },
+          "steerable_change": -0.04680422747861096,
+          "survives": true
+        },
+        "prediction_disagreement": 0.13940613990941117,
+        "prediction_disagreement_ci": [
+          0.12487110284732122,
+          0.15533275585227618
+        ]
+      }
+    },
+    "summary": {
+      "any_accuracy_changed": false,
+      "max_prediction_disagreement": 0.13940613990941117,
+      "min_prediction_disagreement": 0.04556166535742341,
+      "n_datasets": 2,
+      "order_sensitivity_survives": true
+    }
+  },
   "a1_confidence_semantics": {
     "best": "rescaled_pmax",
     "candidates": {

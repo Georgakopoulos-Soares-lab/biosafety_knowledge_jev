@@ -12,6 +12,9 @@ Experiment IDs map to the revision plan:
   A5  circular evaluation                   A10 cost accounting
   A11 repeatability control                 A13 option order as a steering surface
   A12 label and format ablations            A14 confidence-cutoff transfer across tasks
+  A15 all n! orderings vs the rotation subset
+  A16 reversed option order, all ten datasets
+  A17 replication against the updated model version
 """
 import json
 import os
@@ -935,6 +938,258 @@ def a13_order_attack(data):
     return out
 
 
+# ===================================================================== A17
+
+REPLICATION_VERSION = "jev-1.14.0"
+
+
+def a17_version_replication(data):
+    """The same product, after a vendor update.
+
+    Every published number here was collected against jev-1.13.0 through the alias
+    `jev-latest`. That alias has since moved to jev-1.14.0 with no change to the
+    identifier the original runs used, so the published evaluation is not reproducible
+    through it. The fix, and what the released harness now does, is to pin a version.
+
+    The update also supplies the one comparison available without a second vendor:
+    whether these properties belong to one frozen build or survive a change to it.
+    """
+    out = {"meta": {"published_version": MODEL_VERSION,
+                    "replication_version": REPLICATION_VERSION,
+                    "why": "the alias moved; pinning is required for reproducibility"},
+           "per_dataset": {}}
+    for k in CIRCULAR_KEYS:
+        path = os.path.join(RAW, f"{k}_v114.jsonl")
+        if not os.path.exists(path):
+            continue
+        new = {}
+        with open(path) as fh:
+            for line in fh:
+                r = json.loads(line)
+                if r["error"] is None:
+                    new[r["index"]] = r
+        old = {r["index"]: r for r in valid(data[k])}
+        idx = sorted(set(old) & set(new))
+        if not idx:
+            continue
+        n = len(idx)
+        a = np.array([float(old[i]["correct"]) for i in idx])
+        b = np.array([float(new[i]["correct"]) for i in idx])
+        disagree = int(sum(old[i]["pred_idx"] != new[i]["pred_idx"] for i in idx))
+        b01 = int(sum(1 for i in idx if old[i]["correct"] and not new[i]["correct"]))
+        b10 = int(sum(1 for i in idx if new[i]["correct"] and not old[i]["correct"]))
+        p = float(sps.binomtest(b01, b01 + b10, 0.5).pvalue) if b01 + b10 else 1.0
+        d, dlo, dhi = boot_diff_ci(b, a)
+        dis, dlo_w, dhi_w = wilson(disagree, n)
+        entry = {"n": n, "acc_published": float(a.mean()),
+                 "acc_replication": float(b.mean()),
+                 "acc_diff": d, "acc_diff_ci": [dlo, dhi], "mcnemar_p": p,
+                 "accuracy_changed": bool(p < 0.05),
+                 "prediction_disagreement": dis,
+                 "prediction_disagreement_ci": [dlo_w, dhi_w]}
+
+        new_circ = _load_json(f"perm114_{k}.json")
+        old_circ = load_circular(k)
+        if new_circ and old_circ:
+            def _summ(recs):
+                m = len(recs)
+                w = sum(all(c == r["gold"] for c in r["choices_by_rot"]) for r in recs) / m
+                bs = sum(any(c == r["gold"] for c in r["choices_by_rot"]) for r in recs) / m
+                inc = sum(len(set(r["choices_by_rot"])) > 1 for r in recs) / m
+                return {"inconsistency": inc, "worst_case_accuracy": w,
+                        "steerable_fraction": bs - w, "n": m}
+            o, nw = _summ(old_circ), _summ(new_circ)
+            entry["order_sensitivity"] = {
+                "published": o, "replication": nw,
+                "steerable_change": nw["steerable_fraction"] - o["steerable_fraction"],
+                # Retained if still well above the run-to-run floor A13 measures.
+                "survives": bool(nw["steerable_fraction"] > 0.5 * o["steerable_fraction"]),
+            }
+        out["per_dataset"][k] = entry
+    if out["per_dataset"]:
+        vals = list(out["per_dataset"].values())
+        out["summary"] = {
+            "n_datasets": len(vals),
+            "any_accuracy_changed": bool(any(v["accuracy_changed"] for v in vals)),
+            "max_prediction_disagreement": float(max(v["prediction_disagreement"] for v in vals)),
+            "min_prediction_disagreement": float(min(v["prediction_disagreement"] for v in vals)),
+            "order_sensitivity_survives": bool(all(
+                v.get("order_sensitivity", {}).get("survives", False) for v in vals)),
+        }
+    return out
+
+
+# ===================================================================== A16
+
+def a16_reversal(data):
+    """One meaning-preserving change, every dataset.
+
+    Reversing the option list is a single alternative presentation costing one extra call
+    per item, so unlike the cyclic arm it runs on all ten datasets, including the three
+    too small or too wide for a full rotation sweep. For more than two options a reversal
+    is NOT a rotation, so this also tests orderings outside the cyclic group everywhere,
+    not only on the sampled suites of A15.
+
+    The pairing is the point: the same item under two presentations. Aggregate accuracy
+    and item-level agreement are reported together because they disagree, and that
+    disagreement is the paper's central claim.
+    """
+    out = {"meta": {"design": "one reversed presentation per item, paired with baseline",
+                    "note": "reversal is not a rotation for n > 2"}, "per_dataset": {}}
+    flips, diffs = [], []
+    for k in KEYS:
+        path = os.path.join(RAW, f"{k}_rev.jsonl")
+        if not os.path.exists(path):
+            continue
+        rev = {}
+        with open(path) as fh:
+            for line in fh:
+                r = json.loads(line)
+                if r["error"] is None:
+                    rev[r["index"]] = r
+        base = {r["index"]: r for r in valid(data[k])}
+        idx = sorted(set(base) & set(rev))
+        if not idx:
+            continue
+        n = len(idx)
+        b = np.array([float(base[i]["correct"]) for i in idx])
+        v = np.array([float(rev[i]["correct"]) for i in idx])
+        flip = int(sum(base[i]["pred_idx"] != rev[i]["pred_idx"] for i in idx))
+        # McNemar on the discordant pairs: did reversal change accuracy, or only which
+        # items were right?
+        b01 = int(sum(1 for i in idx if base[i]["correct"] and not rev[i]["correct"]))
+        b10 = int(sum(1 for i in idx if rev[i]["correct"] and not base[i]["correct"]))
+        p = float(sps.binomtest(b01, b01 + b10, 0.5).pvalue) if b01 + b10 else 1.0
+        d, dlo, dhi = boot_diff_ci(v, b)
+        f_est, f_lo, f_hi = wilson(flip, n)
+        out["per_dataset"][k] = {
+            "label": LABEL[k], "n": n,
+            "acc_baseline": float(b.mean()), "acc_reversed": float(v.mean()),
+            "acc_diff": d, "acc_diff_ci": [dlo, dhi],
+            "n_discordant": b01 + b10, "mcnemar_p": p,
+            "accuracy_changed": bool(p < 0.05),
+            "prediction_flip_rate": f_est, "prediction_flip_ci": [f_lo, f_hi],
+        }
+        flips.append(f_est)
+        diffs.append(abs(d))
+    if out["per_dataset"]:
+        ps = [v["mcnemar_p"] for v in out["per_dataset"].values()]
+        qs = benjamini_hochberg(ps)
+        for (k, v), q in zip(out["per_dataset"].items(), qs):
+            v["mcnemar_q_bh"] = q
+            v["accuracy_changed_bh"] = bool(q < 0.05)
+        out["summary"] = {
+            "n_datasets": len(flips),
+            "flip_rate_min": float(min(flips)), "flip_rate_max": float(max(flips)),
+            "max_abs_accuracy_change_pp": float(100 * max(diffs)),
+            "n_datasets_accuracy_changed": int(sum(v["accuracy_changed_bh"]
+                                                   for v in out["per_dataset"].values())),
+            # The headline: aggregate accuracy survives a change that moves a large share
+            # of the individual decisions underneath it.
+            "accuracy_stable_predictions_not": bool(
+                all(not v["accuracy_changed_bh"] for v in out["per_dataset"].values())
+                and max(flips) > 0.1),
+        }
+    return out
+
+
+# ===================================================================== A15
+
+def _load_permall(key):
+    return _load_json(f"permall_{key}.json")
+
+
+def _is_cyclic(perm):
+    """True if this ordering is a rotation: perm[p] == (p + rot) % n for some rot."""
+    n = len(perm)
+    rot = perm[0]
+    return all(perm[p] == (p + rot) % n for p in range(n))
+
+
+def a15_full_permutations(data):
+    """How much does a rotation-only measurement under-count?
+
+    Rotations are n of the n! orderings and they all preserve which option follows which,
+    so they cannot detect sensitivity that depends on adjacency. This arm presents a
+    sample of items under EVERY ordering and asks what the rotation subset missed.
+
+    Two comparisons, because they answer different questions and only one of them is
+    fair:
+
+      matched count   4 rotations against 4 randomly chosen NON-rotation orderings, drawn
+                      per item with a fixed seed. Both arms spend four calls, so any
+                      difference is about WHICH orderings, not how many. This is the
+                      clean test of the adjacency argument.
+      all orderings   4 rotations against all 24. More orderings means more chances to
+                      disagree, so this is NOT evidence that rotations are special -- it
+                      is the practical statement of how loose the published bound is.
+
+    Reporting only the second would overstate the case, so both are computed and the
+    matched comparison is the one the claim rests on.
+    """
+    out = {"meta": {
+        "matched_comparison": "4 rotations vs 4 seeded non-rotation orderings, equal budget",
+        "unmatched_comparison": "4 rotations vs all n! orderings; more draws means more "
+                                "chances to disagree, so this bounds practice, not theory",
+    }}
+    for k in CIRCULAR_KEYS:
+        recs = _load_permall(k)
+        if not recs:
+            continue
+        rng = np.random.default_rng(20260919)
+        acc = {a: {"incons": [], "steer": [], "worst": []}
+               for a in ("cyclic", "noncyclic", "all")}
+        n_perms = None
+        for r in recs:
+            perms = [tuple(p) for p in r["perms"]]
+            ch = r["choices_by_perm"]
+            g = r["gold"]
+            n_perms = len(perms)
+            cyc = [i for i, p in enumerate(perms) if _is_cyclic(p)]
+            non = [i for i, p in enumerate(perms) if not _is_cyclic(p)]
+            if len(non) >= len(cyc):
+                non = list(rng.choice(non, size=len(cyc), replace=False))
+            arms = {"cyclic": cyc, "noncyclic": non, "all": list(range(len(perms)))}
+            for name, idx in arms.items():
+                sel = [ch[i] for i in idx]
+                acc[name]["incons"].append(float(len(set(sel)) > 1))
+                acc[name]["worst"].append(float(all(c == g for c in sel)))
+                acc[name]["steer"].append(
+                    float(any(c == g for c in sel) and not all(c == g for c in sel)))
+        n = len(recs)
+        entry = {"n_items": n, "n_orderings": n_perms,
+                 "n_calls": n * (n_perms or 0), "arms": {}}
+        for name in acc:
+            e, lo, hi = wilson(int(sum(acc[name]["incons"])), n)
+            s, slo, shi = wilson(int(sum(acc[name]["steer"])), n)
+            w, wlo, whi = wilson(int(sum(acc[name]["worst"])), n)
+            entry["arms"][name] = {
+                "n_orderings": len(acc[name]["incons"]) and (
+                    4 if name != "all" else n_perms),
+                "inconsistency": e, "inconsistency_ci": [lo, hi],
+                "steerable_fraction": s, "steerable_ci": [slo, shi],
+                "worst_case_accuracy": w, "worst_case_ci": [wlo, whi],
+            }
+        cyc_i = np.array(acc["cyclic"]["incons"])
+        non_i = np.array(acc["noncyclic"]["incons"])
+        all_i = np.array(acc["all"]["incons"])
+        d_matched = boot_diff_ci(non_i, cyc_i)
+        d_all = boot_diff_ci(all_i, cyc_i)
+        entry["matched"] = {
+            "noncyclic_minus_cyclic": d_matched[0],
+            "ci": [d_matched[1], d_matched[2]],
+            # If this interval excludes zero, four non-rotations disagree more often than
+            # four rotations at the same cost, and the adjacency argument has evidence.
+            "noncyclic_more_unstable": bool(d_matched[1] > 0),
+            "indistinguishable": bool(d_matched[1] <= 0 <= d_matched[2]),
+        }
+        entry["unmatched"] = {"all_minus_cyclic": d_all[0], "ci": [d_all[1], d_all[2]]}
+        entry["undercount_ratio"] = (float(all_i.mean() / cyc_i.mean())
+                                     if cyc_i.mean() else float("nan"))
+        out[k] = entry
+    return out
+
+
 # ===================================================================== A14
 
 # An operator picking a confidence cutoff wants a guarantee of the form "at most this
@@ -1164,6 +1419,9 @@ def main():
         "a12_ablations": a12_ablations(data),
         "a13_order_attack": a13_order_attack(data),
         "a14_threshold_transfer": a14_threshold_transfer(data),
+        "a15_full_permutations": a15_full_permutations(data),
+        "a16_reversal": a16_reversal(data),
+        "a17_version_replication": a17_version_replication(data),
     }
     os.makedirs(DERIVED, exist_ok=True)
     dump(stats, os.path.join(DERIVED, "stats.json"))

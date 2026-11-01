@@ -1,9 +1,10 @@
 """Figures for the manuscript. Vector PDF for LaTeX, PNG for inspection.
 
 fig1_uncertainty   (a) reliability of the two uncertainty quantities the API exposes;
-                   (b) risk-coverage under p_max deferral;
-                   (c) accuracy against mean inference cost for selective permutation
-                       averaging, with random and oracle selection for reference.
+                   (b) risk-coverage under p_max deferral.
+
+The selective-averaging cost curve that was panel (c) is reported numerically instead:
+on a six-page limit the two tables and these two panels are what earn their space.
 
 The instability decomposition that was once its own figure is now Table II, which carries
 the same identical-versus-rotations comparison plus the worst-case and steerable columns.
@@ -59,7 +60,7 @@ def save(fig, name):
 
 # --------------------------------------------------------------- Figure 1
 def fig1_uncertainty():
-    fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(7.16, 1.95))
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(7.16, 1.6))
 
     # (a) Reliability. Bins with <25 items are dropped: p_max >= 1/n leaves the lowest
     # bins nearly empty, and their Wilson intervals would span the axis.
@@ -109,7 +110,6 @@ def fig1_uncertainty():
     axB.set_title("(b) accuracy against coverage", loc="left")
     axB.legend(loc="lower left", frameon=False, borderaxespad=0.25, handlelength=1.6)
 
-    _cascade_panel(axC)
     fig.tight_layout(w_pad=1.6)
     save(fig, "fig1_uncertainty")
 

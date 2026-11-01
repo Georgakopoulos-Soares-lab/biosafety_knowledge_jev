@@ -273,12 +273,7 @@ are omitted, because $\pmax \geq 1/n$ leaves the lowest bins of the $\pmax$ curv
 empty; error bars are Wilson intervals. (b) Accuracy on retained items against coverage,
 withholding the least confident first, for the three WMDP suites and the largest LAB-Bench subtask (dashed); the remaining six subtasks are omitted for legibility and appear
 in Table~\ref{tab:main}. The dashed vertical marker is the 40\% deferral operating point
-quoted in Section~\ref{sec:selective} and in Table~\ref{tab:main}. (c) Accuracy gain over a
-single evaluation against mean inference calls per item, plotted as a gain so that two
-datasets 22~pp apart in absolute accuracy share one scale. Items are selected for
-additional permutations least-confident first, and compared against random selection at the
-same budget (averaged over 400 draws) and against an oracle that selects, under a fixed
-budget, the items where averaging helps.}
+quoted in Section~\ref{sec:selective} and in Table~\ref{tab:main}.}
 \label{fig:uncertainty}
 \end{figure*}
 
@@ -369,16 +364,14 @@ over-selected on \statNSigPosDatasets{} of \statNTestedPosDatasets{} testable da
 most clearly on WMDP-Cyber ($p \statPosPCyber{}$; \statPosPredACyber{} of predictions
 against \statPosGoldACyber{} of correct answers), and there it is confined to uncertain
 items: \statPosLowPredA{} of predictions fall first at $\pmax < 0.5$, while at
-$\pmax \geq 0.9$ the effect is absent ($p = \statPosHighP{}$). Four controls rule out the
-obvious alternatives and are summarised rather than reported in full. Non-alphabetic
-glyphs leave it intact (\statAbSymCyber{} of first-position predictions against
-\statAbBaseCyber{} at baseline), so it is positional, not a preference for the letter
-\texttt{A}; permuting letters across positions splits it (\statAbShufPosCyber{} positional
-against \statAbShufLetterCyber{} on \texttt{A}), so a weaker label component exists too.
-Quantisation ties do not explain it (\statTieFrac{} of records tie; the first option wins
-\statTieObservedFirst{} against \statTieExpectedFirst{} expected). Prompt format does
-matter: listing options only as category keys costs 4.7~pp ($\statAbCritCICyber{}$), so
-the redundant serialisation is load-bearing.
+$\pmax \geq 0.9$ the effect is absent ($p = \statPosHighP{}$). Four controls, reported in
+full in the released analysis, rule out the obvious alternatives: non-alphabetic glyphs
+leave the effect intact (\statAbSymCyber{} against \statAbBaseCyber{} at baseline), so it
+is positional rather than a preference for the letter \texttt{A}; permuting letters across
+positions splits it (\statAbShufPosCyber{} positional, \statAbShufLetterCyber{} on
+\texttt{A}), so a weaker label component exists too; quantisation ties do not explain it;
+and prompt format matters, listing options only as category keys costing 4.7~pp
+($\statAbCritCICyber{}$).
 
 \subsection{Answer order as a decision-steering surface}
 \label{sec:attack}
@@ -416,26 +409,54 @@ paraphrased variant built for robustness, is no more stable under reordering tha
 of the representation rather than the question, and it is invisible in aggregate accuracy,
 which varies by only \statRotSpreadCyber{}~pp across the same four orderings.
 
+Two further arms bound what four rotations miss, and the first corrected an expectation of
+ours. Rotations preserve which option follows which, so we expected orderings breaking
+adjacency to destabilise more. Under all \statPermNOrderingsCyber{} orderings of
+\statPermNItemsCyber{} items per suite, four non-rotations disagree no more often than
+four rotations at the same cost (\statPermMatchedDiffCyber{}~pp on WMDP-Cyber, 95\% CI
+$\statPermMatchedCICyber{}$; \statPermMatchedDiffBio{}~pp on WMDP-Bio,
+$\statPermMatchedCIBio{}$). Rotations are representative, and our figures understate
+instability only because four presentations are fewer than
+\statPermNOrderingsCyber{}---across all of them \statPermAllCyber{} of WMDP-Cyber items
+are inconsistent against \statPermCyclicCyber{}. Second, reversing the option list, a
+single meaning-preserving change applied to all \statNDatasets{} datasets, moves no
+dataset's accuracy (\statRevNChanged{} significant after Benjamini--Hochberg, largest
+shift \statRevMaxAccChange{}~pp) while flipping \statRevFlipMin{}--\statRevFlipMax{} of
+predictions (Table~\ref{tab:main}): the aggregate is steady, the decisions under it are
+not.
+
 \subsection{Selective permutation averaging}
 \label{sec:permavg}
 
-Averaging over presentations should help where instability is high, and the same data
-measures it. Averaging the four inverse-permuted distributions raises WMDP-Cyber accuracy
-from \statSingleAccCyber{} to \statEnsAccCyber{} (\statEnsGainCyber{}~pp, 95\% CI
-$[\statEnsGainCyberLo{}, \statEnsGainCyberHi{}]$); majority voting is weaker
-(\statMajAccCyber{}). On WMDP-Bio, already \statConsistBio{} stable, the gain is
-\statEnsGainBio{}~pp with an interval spanning zero. Averaging helps where there is
-instability to average away, and not otherwise.
-
-Since $\pmax$ predicts correctness, it can select which items get the extra evaluations:
-presenting a fraction $c$ under all four rotations, least-confident first, costs $1 + 3c$
-calls per item. On WMDP-Cyber the least confident 40\% reaches
-\statCascadeCyberAtForty{} at \statCascadeCyberCallsForty{} calls per item ---
-\statCascadeFracOfGain{} of the gain from averaging everything, at
-\statCascadeCostSaving{} lower cost (Fig.~\ref{fig:uncertainty}(c)) --- against
+Averaging the four inverse-permuted distributions raises WMDP-Cyber accuracy from
+\statSingleAccCyber{} to \statEnsAccCyber{} (\statEnsGainCyber{}~pp, 95\% CI
+$[\statEnsGainCyberLo{}, \statEnsGainCyberHi{}]$), and on WMDP-Bio, already
+\statConsistBio{} stable, by \statEnsGainBio{}~pp with an interval spanning zero: it helps
+where there is instability to average away. Because $\pmax$ predicts correctness it can
+also choose which items get the extra calls --- presenting the least confident 40\% under
+all four rotations reaches \statCascadeCyberAtForty{} at
+\statCascadeCyberCallsForty{} calls per item, \statCascadeFracOfGain{} of the gain from
+averaging everything at \statCascadeCostSaving{} lower cost, against
 \statCascadeCyberRandForty{} for random selection at the same budget, which no draw of 400
-beat. On WMDP-Bio the advantage over random is \statCascadeAdvantageBio{}~pp and
-\statCascadeRandBeatBio{} of draws do at least as well, so we claim no benefit there.
+beat. On WMDP-Bio random selection matches it, so we claim no benefit there. Full
+risk--cost curves are in the released analysis.
+
+\subsection{The same model, after a vendor update}
+\label{sec:version}
+
+All of the above was collected against \texttt{\statVerPublished{}} through the alias
+\texttt{jev-latest}, which six weeks later resolves to \texttt{\statVerReplication{}} with
+no change to the identifier our runs named. An evaluation reached through an alias is
+therefore not reproducible; the endpoint accepts a concrete version and the released
+harness now pins one. Re-running both arms on the new version gives the one comparison
+available to us without a second vendor. Accuracy is unchanged (\statVerAccOldCyber{} to
+\statVerAccNewCyber{} on WMDP-Cyber, $p = \statVerPCyber{}$; \statVerAccOldBio{} to
+\statVerAccNewBio{} on WMDP-Bio, $p = \statVerPBio{}$), yet the versions disagree on
+\statVerDisagreeCyber{} and \statVerDisagreeBio{} of items, and the steerable fraction is
+largely retained (\statVerSteerOldCyber{} to \statVerSteerNewCyber{} on WMDP-Cyber,
+\statVerSteerOldBio{} to \statVerSteerNewBio{} on WMDP-Bio). The properties are not an
+artefact of one frozen build, though two versions of one vendor's model remain a weak
+substitute for a second system.
 
 \section{Discussion and Limitations}
 
@@ -472,10 +493,10 @@ the first thing we would test given a second such system. We evaluate no biosafe
 hazard-classification task, and multiple-choice questions are only a proxy for the
 knowledge they probe; label quality in biology-adjacent sets can be poor~\cite{mmluredux}
 and we did not audit it, nor can contamination be excluded. We did not measure latency or
-run a larger model as a fallback. Cyclic evaluation covers rotations rather than all $n!$
-orderings; rotations preserve which option follows which, so they cannot detect
-adjacency-dependent sensitivity, making our instability a lower bound. Three LAB-Bench
-subtasks carry no cyclic run, and the per-rotation comparisons of
+run a larger model as a fallback. Our instability figures are a lower bound because they
+sample four presentations out of $n!$, not because rotations are an unrepresentative
+subset: Section~\ref{sec:attack} tests that directly and finds no difference. Three
+LAB-Bench subtasks carry no cyclic run, and the per-rotation comparisons of
 Section~\ref{sec:repeat} need a common option count, so \statCircMixedList{} appear in
 Table~\ref{tab:order} but not there. The label and format ablations were run on WMDP-Bio
 and WMDP-Cyber only. Probabilities are quantised to two decimals and several LAB-Bench

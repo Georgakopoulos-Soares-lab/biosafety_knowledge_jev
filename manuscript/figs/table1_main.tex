@@ -1,26 +1,26 @@
 \begin{table*}[t]
 \centering
-\caption{Per-dataset results. \emph{Lift} is chance-adjusted accuracy, $(\mathrm{acc}-c)/(1-c)$, with each item's own $c=1/n$. ECE and AUROC are on $p_{\max}$, not the vendor \texttt{confidence} field. \emph{Retained} withholds the least confident 40\%. Intervals are Wilson.}
+\caption{Per-dataset results. ECE and AUROC are on $p_{\max}$, not the vendor \texttt{confidence} field. \emph{Retained} withholds the least confident 40\%. \emph{Flip} is the share of predictions that change when the option list is reversed, a single meaning-preserving change: no dataset's accuracy moves significantly, yet up to a third of decisions do. Intervals are Wilson.}
 \label{tab:main}
 \footnotesize
 \setlength{\tabcolsep}{3.3pt}
 \begin{tabular}{@{}llrccccccc@{}}
 \toprule
-Suite & Dataset & $N$ & opts. & accuracy [95\% CI] & lift & ECE & AUROC & $P(\text{err}\mid p_{\max}\!\geq\!0.9)$ & retained \\
+Suite & Dataset & $N$ & opts. & accuracy [95\% CI] & ECE & AUROC & $P(\text{err}\mid p_{\max}\!\geq\!0.9)$ & retained & flip \\
 \midrule
-WMDP & WMDP-Bio & 1273 & 4 & 0.852 [0.83, 0.87] & 0.802 & 0.036 & 0.855 & 0.039 [0.03, 0.05] & 0.971 \\
- & WMDP-Bio-Robust & 811 & 4 & 0.801 [0.77, 0.83] & 0.735 & 0.044 & 0.823 & 0.063 [0.04, 0.09] & 0.938 \\
- & WMDP-Chem & 408 & 4 & 0.730 [0.69, 0.77] & 0.641 & 0.057 & 0.824 & 0.056 [0.03, 0.10] & 0.898 \\
- & WMDP-Cyber & 1987 & 4 & 0.634 [0.61, 0.66] & 0.512 & 0.033 & 0.774 & 0.075 [0.06, 0.10] & 0.789 \\
+WMDP & WMDP-Bio & 1273 & 4 & 0.852 [0.83, 0.87] & 0.036 & 0.855 & 0.039 [0.03, 0.05] & 0.971 & 0.068 \\
+ & WMDP-Bio-Robust & 811 & 4 & 0.801 [0.77, 0.83] & 0.044 & 0.823 & 0.063 [0.04, 0.09] & 0.938 & 0.085 \\
+ & WMDP-Chem & 408 & 4 & 0.730 [0.69, 0.77] & 0.057 & 0.824 & 0.056 [0.03, 0.10] & 0.898 & 0.127 \\
+ & WMDP-Cyber & 1987 & 4 & 0.634 [0.61, 0.66] & 0.033 & 0.774 & 0.075 [0.06, 0.10] & 0.789 & 0.268 \\
 \midrule
-LAB-Bench & LB-CloningScenarios & 32 & 4--8 & 0.469 [0.31, 0.64] & 0.314 & 0.126 & 0.671 & 0.500 [0.09, 0.91] & 0.579 \\
- & LB-ProtocolQA & 108 & 4--7 & 0.537 [0.44, 0.63] & 0.397 & 0.124 & 0.620 & 0.077 [0.01, 0.33] & 0.600 \\
- & LB-SeqQA & 600 & 2--5 & 0.618 [0.58, 0.66] & 0.492 & 0.093 & 0.861 & 0.000 [0.00, 0.05] & 0.825 \\
- & LB-DbQA & 520 & 4 & 0.398 [0.36, 0.44] & 0.197 & 0.086 & 0.653 & 0.091 [0.03, 0.28] & 0.468 \\
- & LB-LitQA2 & 199 & 2--10 & 0.402 [0.34, 0.47] & 0.208 & 0.168 & 0.656 & 0.381 [0.21, 0.59] & 0.479 \\
- & LB-SuppQA & 82 & 4--8 & 0.366 [0.27, 0.47] & 0.195 & 0.193 & 0.709 & 0.250 [0.07, 0.59] & 0.429 \\
+LAB-Bench & LB-CloningScenarios & 32 & 4--8 & 0.469 [0.31, 0.64] & 0.126 & 0.671 & 0.500 [0.09, 0.91] & 0.579 & 0.281 \\
+ & LB-ProtocolQA & 108 & 4--7 & 0.537 [0.44, 0.63] & 0.124 & 0.620 & 0.077 [0.01, 0.33] & 0.600 & 0.241 \\
+ & LB-SeqQA & 600 & 2--5 & 0.618 [0.58, 0.66] & 0.093 & 0.861 & 0.000 [0.00, 0.05] & 0.825 & 0.295 \\
+ & LB-DbQA & 520 & 4 & 0.398 [0.36, 0.44] & 0.086 & 0.653 & 0.091 [0.03, 0.28] & 0.468 & 0.342 \\
+ & LB-LitQA2 & 199 & 2--10 & 0.402 [0.34, 0.47] & 0.168 & 0.656 & 0.381 [0.21, 0.59] & 0.479 & 0.236 \\
+ & LB-SuppQA & 82 & 4--8 & 0.366 [0.27, 0.47] & 0.193 & 0.709 & 0.250 [0.07, 0.59] & 0.429 & 0.341 \\
 \midrule
-\multicolumn{2}{@{}l}{\textbf{pooled}} & 6020 & 2--10 & 0.673 [0.661, 0.685] & -- & 0.034 & 0.820 & -- & -- \\
+\multicolumn{2}{@{}l}{\textbf{pooled}} & 6020 & 2--10 & 0.673 [0.661, 0.685] & 0.034 & 0.820 & -- & -- & -- \\
 \bottomrule
 \end{tabular}
 \end{table*}
