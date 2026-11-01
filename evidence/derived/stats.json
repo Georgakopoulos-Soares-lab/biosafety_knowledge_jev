@@ -353,6 +353,887 @@
       "gold_first_share": 0.2657272269753397
     }
   },
+  "a13_order_attack": {
+    "bio": {
+      "arms": {
+        "identical": {
+          "acc_single": 0.8538884524744698,
+          "best_case_accuracy": 0.8609583660644148,
+          "best_case_ci": [
+            0.8408636743433263,
+            0.878881125335092
+          ],
+          "steerable_ci": [
+            0.013337080182576646,
+            0.028830612954849146
+          ],
+          "steerable_fraction": 0.019638648860958365,
+          "worst_case_accuracy": 0.8413197172034564,
+          "worst_case_ci": [
+            0.8202254412635777,
+            0.8603602289437626
+          ],
+          "worst_case_drop": 0.01256873527101332,
+          "worst_case_drop_ci": [
+            0.0070699135899450205,
+            0.01885310290652009
+          ]
+        },
+        "rotations": {
+          "acc_single": 0.8538884524744698,
+          "best_case_accuracy": 0.8947368421052632,
+          "best_case_ci": [
+            0.8766742578823266,
+            0.9104242444863464
+          ],
+          "steerable_ci": [
+            0.08013649025418698,
+            0.11240226005217932
+          ],
+          "steerable_fraction": 0.09505106048703849,
+          "worst_case_accuracy": 0.7996857816182247,
+          "worst_case_ci": [
+            0.7768125848080316,
+            0.8207557309206226
+          ],
+          "worst_case_drop": 0.05420267085624508,
+          "worst_case_drop_ci": [
+            0.04241948153967001,
+            0.06677140612725851
+          ]
+        }
+      },
+      "n_calls_per_item": {
+        "identical": 4,
+        "rotations": 4
+      },
+      "n_items": 1273,
+      "order_attributable": {
+        "significant": true,
+        "steerable_fraction_increase": 0.07541241162608012,
+        "steerable_fraction_increase_ci": [
+          0.060487038491751764,
+          0.09112333071484682
+        ],
+        "worst_case_accuracy_drop": 0.04163393558523176,
+        "worst_case_accuracy_drop_ci": [
+          0.02985074626865669,
+          0.053417124901806834
+        ]
+      }
+    },
+    "cyber": {
+      "arms": {
+        "identical": {
+          "acc_single": 0.6326119778560644,
+          "best_case_accuracy": 0.6658278812279819,
+          "best_case_ci": [
+            0.6447851441351116,
+            0.6862306668327638
+          ],
+          "steerable_ci": [
+            0.054905945779377095,
+            0.07661706307728997
+          ],
+          "steerable_fraction": 0.06492199295420231,
+          "worst_case_accuracy": 0.6009058882737796,
+          "worst_case_ci": [
+            0.5791988052033872,
+            0.6222235623203123
+          ],
+          "worst_case_drop": 0.031706089582284824,
+          "worst_case_drop_ci": [
+            0.02415702063412184,
+            0.039758429793658734
+          ]
+        },
+        "rotations": {
+          "acc_single": 0.6326119778560644,
+          "best_case_accuracy": 0.7986914947156517,
+          "best_case_ci": [
+            0.7804920332036249,
+            0.8157382666732613
+          ],
+          "steerable_ci": [
+            0.2866102730033036,
+            0.32712089750611056
+          ],
+          "steerable_fraction": 0.3064921992954202,
+          "worst_case_accuracy": 0.4921992954202315,
+          "worst_case_ci": [
+            0.4702536059700011,
+            0.5141750888099623
+          ],
+          "worst_case_drop": 0.14041268243583288,
+          "worst_case_drop_ci": [
+            0.12531454453950674,
+            0.15601409159536989
+          ]
+        }
+      },
+      "n_calls_per_item": {
+        "identical": 4,
+        "rotations": 4
+      },
+      "n_items": 1987,
+      "order_attributable": {
+        "significant": true,
+        "steerable_fraction_increase": 0.2415702063412179,
+        "steerable_fraction_increase_ci": [
+          0.22093608454957225,
+          0.2622043281328636
+        ],
+        "worst_case_accuracy_drop": 0.10870659285354806,
+        "worst_case_accuracy_drop_ci": [
+          0.09360845495722203,
+          0.12380473074987425
+        ]
+      }
+    },
+    "meta": {
+      "arms": "rotations (order + run-to-run variation) vs byte-identical repeats (run-to-run variation alone)",
+      "caveat": "worst-of-k requires the gold label to select the worst presentation, so it is an upper bound on an attack; steerable_fraction does not",
+      "design": "worst-of-k and best-of-k over k presentations, matched budget"
+    }
+  },
+  "a14_threshold_transfer": {
+    "achievable": {
+      "bio": {
+        "achievable": true,
+        "best_error_at_min_n": 0.009727626459143934,
+        "coverage": 0.6944226237234878,
+        "label": "WMDP-Bio",
+        "tau": 0.87
+      },
+      "bio-robust": {
+        "achievable": true,
+        "best_error_at_min_n": 0.019305019305019266,
+        "coverage": 0.5413070283600493,
+        "label": "WMDP-Bio-Robust",
+        "tau": 0.9299999999999999
+      },
+      "chem": {
+        "achievable": true,
+        "best_error_at_min_n": 0.0,
+        "coverage": 0.4019607843137255,
+        "label": "WMDP-Chem",
+        "tau": 0.9299999999999999
+      },
+      "cyber": {
+        "achievable": true,
+        "best_error_at_min_n": 0.01650165016501648,
+        "coverage": 0.2350276799194766,
+        "label": "WMDP-Cyber",
+        "tau": 0.9400000000000001
+      },
+      "labbench-cloning": {
+        "achievable": false,
+        "best_error_at_min_n": 0.4,
+        "coverage": 0.0,
+        "label": "LB-CloningScenarios",
+        "tau": null
+      },
+      "labbench-db": {
+        "achievable": false,
+        "best_error_at_min_n": 0.09090909090909094,
+        "coverage": 0.0,
+        "label": "LB-DbQA",
+        "tau": null
+      },
+      "labbench-litqa2": {
+        "achievable": false,
+        "best_error_at_min_n": 0.33333333333333337,
+        "coverage": 0.0,
+        "label": "LB-LitQA2",
+        "tau": null
+      },
+      "labbench-protocol": {
+        "achievable": false,
+        "best_error_at_min_n": 0.2857142857142857,
+        "coverage": 0.0,
+        "label": "LB-ProtocolQA",
+        "tau": null
+      },
+      "labbench-seq": {
+        "achievable": true,
+        "best_error_at_min_n": 0.0,
+        "coverage": 0.44,
+        "label": "LB-SeqQA",
+        "tau": 0.55
+      },
+      "labbench-supp": {
+        "achievable": false,
+        "best_error_at_min_n": 0.36,
+        "coverage": 0.0,
+        "label": "LB-SuppQA",
+        "tau": null
+      }
+    },
+    "meta": {
+      "min_accepted": 20,
+      "rule": "lowest cutoff meeting the target on the source dataset, then applied unchanged to the target dataset",
+      "target_error": 0.05
+    },
+    "per_source": {
+      "bio": {
+        "label": "WMDP-Bio",
+        "targets": {
+          "bio": {
+            "ci": [
+              0.03728453600160522,
+              0.06615899877394545
+            ],
+            "coverage": 0.6944226237234878,
+            "error_rate": 0.049773755656108594,
+            "meets_target": true,
+            "n_accepted": 884,
+            "ratio_to_target": 0.9954751131221719,
+            "small_sample": false
+          },
+          "bio-robust": {
+            "ci": [
+              0.04455811587951958,
+              0.0876957526043586
+            ],
+            "coverage": 0.6091245376078915,
+            "error_rate": 0.06275303643724696,
+            "meets_target": false,
+            "n_accepted": 494,
+            "ratio_to_target": 1.2550607287449391,
+            "small_sample": false
+          },
+          "chem": {
+            "ci": [
+              0.03611064877145607,
+              0.1060526040369538
+            ],
+            "coverage": 0.47058823529411764,
+            "error_rate": 0.0625,
+            "meets_target": false,
+            "n_accepted": 192,
+            "ratio_to_target": 1.25,
+            "small_sample": false
+          },
+          "cyber": {
+            "ci": [
+              0.06969128693917037,
+              0.11621553659338124
+            ],
+            "coverage": 0.2954202315047811,
+            "error_rate": 0.09028960817717206,
+            "meets_target": false,
+            "n_accepted": 587,
+            "ratio_to_target": 1.805792163543441,
+            "small_sample": false
+          },
+          "labbench-cloning": {
+            "ci": [
+              0.06149194472039621,
+              0.7923403991979522
+            ],
+            "coverage": 0.09375,
+            "error_rate": 0.3333333333333333,
+            "meets_target": false,
+            "n_accepted": 3,
+            "ratio_to_target": 6.666666666666666,
+            "small_sample": true
+          },
+          "labbench-db": {
+            "ci": [
+              0.05915927776244326,
+              0.3247868542781298
+            ],
+            "coverage": 0.051923076923076926,
+            "error_rate": 0.14814814814814814,
+            "meets_target": false,
+            "n_accepted": 27,
+            "ratio_to_target": 2.962962962962963,
+            "small_sample": false
+          },
+          "labbench-litqa2": {
+            "ci": [
+              0.23403302377747973,
+              0.5926054264103301
+            ],
+            "coverage": 0.12562814070351758,
+            "error_rate": 0.4,
+            "meets_target": false,
+            "n_accepted": 25,
+            "ratio_to_target": 8.0,
+            "small_sample": false
+          },
+          "labbench-protocol": {
+            "ci": [
+              0.09555044322080117,
+              0.4726179811956498
+            ],
+            "coverage": 0.1574074074074074,
+            "error_rate": 0.23529411764705882,
+            "meets_target": false,
+            "n_accepted": 17,
+            "ratio_to_target": 4.705882352941176,
+            "small_sample": true
+          },
+          "labbench-seq": {
+            "ci": [
+              0.0,
+              0.03926207629154474
+            ],
+            "coverage": 0.15666666666666668,
+            "error_rate": 0.0,
+            "meets_target": true,
+            "n_accepted": 94,
+            "ratio_to_target": 0.0,
+            "small_sample": false
+          },
+          "labbench-supp": {
+            "ci": [
+              0.05136768974608513,
+              0.4769805619608442
+            ],
+            "coverage": 0.13414634146341464,
+            "error_rate": 0.18181818181818182,
+            "meets_target": false,
+            "n_accepted": 11,
+            "ratio_to_target": 3.6363636363636362,
+            "small_sample": true
+          }
+        },
+        "tau": 0.87,
+        "worst_transfer": {
+          "dataset": "labbench-litqa2",
+          "error_rate": 0.4,
+          "label": "LB-LitQA2",
+          "ratio_to_target": 8.0
+        }
+      },
+      "bio-robust": {
+        "label": "WMDP-Bio-Robust",
+        "targets": {
+          "bio": {
+            "ci": [
+              0.02039506297143901,
+              0.04458208035390541
+            ],
+            "coverage": 0.6237234878240377,
+            "error_rate": 0.030226700251889168,
+            "meets_target": true,
+            "n_accepted": 794,
+            "ratio_to_target": 0.6045340050377833,
+            "small_sample": false
+          },
+          "bio-robust": {
+            "ci": [
+              0.02968269679122176,
+              0.06931765186051878
+            ],
+            "coverage": 0.5413070283600493,
+            "error_rate": 0.04555808656036447,
+            "meets_target": true,
+            "n_accepted": 439,
+            "ratio_to_target": 0.9111617312072893,
+            "small_sample": false
+          },
+          "chem": {
+            "ci": [
+              0.024922210615967555,
+              0.09329327058936952
+            ],
+            "coverage": 0.4019607843137255,
+            "error_rate": 0.04878048780487805,
+            "meets_target": true,
+            "n_accepted": 164,
+            "ratio_to_target": 0.975609756097561,
+            "small_sample": false
+          },
+          "cyber": {
+            "ci": [
+              0.04506009486333501,
+              0.08774325860235646
+            ],
+            "coverage": 0.2551585304479114,
+            "error_rate": 0.0631163708086785,
+            "meets_target": false,
+            "n_accepted": 507,
+            "ratio_to_target": 1.26232741617357,
+            "small_sample": false
+          },
+          "labbench-cloning": {
+            "ci": [
+              0.20654931437723745,
+              1.0
+            ],
+            "coverage": 0.03125,
+            "error_rate": 1.0,
+            "meets_target": false,
+            "n_accepted": 1,
+            "ratio_to_target": 20.0,
+            "small_sample": true
+          },
+          "labbench-db": {
+            "ci": [
+              0.027866481213768224,
+              0.3010336452284873
+            ],
+            "coverage": 0.038461538461538464,
+            "error_rate": 0.1,
+            "meets_target": false,
+            "n_accepted": 20,
+            "ratio_to_target": 2.0,
+            "small_sample": false
+          },
+          "labbench-litqa2": {
+            "ci": [
+              0.21380798904474121,
+              0.6740935542034926
+            ],
+            "coverage": 0.07035175879396985,
+            "error_rate": 0.42857142857142855,
+            "meets_target": false,
+            "n_accepted": 14,
+            "ratio_to_target": 8.571428571428571,
+            "small_sample": true
+          },
+          "labbench-protocol": {
+            "ci": [
+              0.016232172885884855,
+              0.37735843645159567
+            ],
+            "coverage": 0.10185185185185185,
+            "error_rate": 0.09090909090909091,
+            "meets_target": false,
+            "n_accepted": 11,
+            "ratio_to_target": 1.8181818181818181,
+            "small_sample": true
+          },
+          "labbench-seq": {
+            "ci": [
+              0.0,
+              0.07707356308558039
+            ],
+            "coverage": 0.07666666666666666,
+            "error_rate": 0.0,
+            "meets_target": true,
+            "n_accepted": 46,
+            "ratio_to_target": 0.0,
+            "small_sample": false
+          },
+          "labbench-supp": {
+            "ci": [
+              0.030053369748306635,
+              0.5635028221864702
+            ],
+            "coverage": 0.07317073170731707,
+            "error_rate": 0.16666666666666666,
+            "meets_target": false,
+            "n_accepted": 6,
+            "ratio_to_target": 3.333333333333333,
+            "small_sample": true
+          }
+        },
+        "tau": 0.9299999999999999,
+        "worst_transfer": {
+          "dataset": "labbench-db",
+          "error_rate": 0.1,
+          "label": "LB-DbQA",
+          "ratio_to_target": 2.0
+        }
+      },
+      "chem": {
+        "label": "WMDP-Chem",
+        "targets": {
+          "bio": {
+            "ci": [
+              0.02039506297143901,
+              0.04458208035390541
+            ],
+            "coverage": 0.6237234878240377,
+            "error_rate": 0.030226700251889168,
+            "meets_target": true,
+            "n_accepted": 794,
+            "ratio_to_target": 0.6045340050377833,
+            "small_sample": false
+          },
+          "bio-robust": {
+            "ci": [
+              0.02968269679122176,
+              0.06931765186051878
+            ],
+            "coverage": 0.5413070283600493,
+            "error_rate": 0.04555808656036447,
+            "meets_target": true,
+            "n_accepted": 439,
+            "ratio_to_target": 0.9111617312072893,
+            "small_sample": false
+          },
+          "chem": {
+            "ci": [
+              0.024922210615967555,
+              0.09329327058936952
+            ],
+            "coverage": 0.4019607843137255,
+            "error_rate": 0.04878048780487805,
+            "meets_target": true,
+            "n_accepted": 164,
+            "ratio_to_target": 0.975609756097561,
+            "small_sample": false
+          },
+          "cyber": {
+            "ci": [
+              0.04506009486333501,
+              0.08774325860235646
+            ],
+            "coverage": 0.2551585304479114,
+            "error_rate": 0.0631163708086785,
+            "meets_target": false,
+            "n_accepted": 507,
+            "ratio_to_target": 1.26232741617357,
+            "small_sample": false
+          },
+          "labbench-cloning": {
+            "ci": [
+              0.20654931437723745,
+              1.0
+            ],
+            "coverage": 0.03125,
+            "error_rate": 1.0,
+            "meets_target": false,
+            "n_accepted": 1,
+            "ratio_to_target": 20.0,
+            "small_sample": true
+          },
+          "labbench-db": {
+            "ci": [
+              0.027866481213768224,
+              0.3010336452284873
+            ],
+            "coverage": 0.038461538461538464,
+            "error_rate": 0.1,
+            "meets_target": false,
+            "n_accepted": 20,
+            "ratio_to_target": 2.0,
+            "small_sample": false
+          },
+          "labbench-litqa2": {
+            "ci": [
+              0.21380798904474121,
+              0.6740935542034926
+            ],
+            "coverage": 0.07035175879396985,
+            "error_rate": 0.42857142857142855,
+            "meets_target": false,
+            "n_accepted": 14,
+            "ratio_to_target": 8.571428571428571,
+            "small_sample": true
+          },
+          "labbench-protocol": {
+            "ci": [
+              0.016232172885884855,
+              0.37735843645159567
+            ],
+            "coverage": 0.10185185185185185,
+            "error_rate": 0.09090909090909091,
+            "meets_target": false,
+            "n_accepted": 11,
+            "ratio_to_target": 1.8181818181818181,
+            "small_sample": true
+          },
+          "labbench-seq": {
+            "ci": [
+              0.0,
+              0.07707356308558039
+            ],
+            "coverage": 0.07666666666666666,
+            "error_rate": 0.0,
+            "meets_target": true,
+            "n_accepted": 46,
+            "ratio_to_target": 0.0,
+            "small_sample": false
+          },
+          "labbench-supp": {
+            "ci": [
+              0.030053369748306635,
+              0.5635028221864702
+            ],
+            "coverage": 0.07317073170731707,
+            "error_rate": 0.16666666666666666,
+            "meets_target": false,
+            "n_accepted": 6,
+            "ratio_to_target": 3.333333333333333,
+            "small_sample": true
+          }
+        },
+        "tau": 0.9299999999999999,
+        "worst_transfer": {
+          "dataset": "labbench-db",
+          "error_rate": 0.1,
+          "label": "LB-DbQA",
+          "ratio_to_target": 2.0
+        }
+      },
+      "cyber": {
+        "label": "WMDP-Cyber",
+        "targets": {
+          "bio": {
+            "ci": [
+              0.019294859976058277,
+              0.04366756233628315
+            ],
+            "coverage": 0.593872741555381,
+            "error_rate": 0.0291005291005291,
+            "meets_target": true,
+            "n_accepted": 756,
+            "ratio_to_target": 0.582010582010582,
+            "small_sample": false
+          },
+          "bio-robust": {
+            "ci": [
+              0.027811613221847522,
+              0.06799763805791313
+            ],
+            "coverage": 0.5080147965474723,
+            "error_rate": 0.043689320388349516,
+            "meets_target": true,
+            "n_accepted": 412,
+            "ratio_to_target": 0.8737864077669902,
+            "small_sample": false
+          },
+          "chem": {
+            "ci": [
+              0.02341602470846764,
+              0.09565288292973068
+            ],
+            "coverage": 0.35784313725490197,
+            "error_rate": 0.04794520547945205,
+            "meets_target": true,
+            "n_accepted": 146,
+            "ratio_to_target": 0.958904109589041,
+            "small_sample": false
+          },
+          "cyber": {
+            "ci": [
+              0.03131326634920647,
+              0.07029515815215656
+            ],
+            "coverage": 0.2350276799194766,
+            "error_rate": 0.047109207708779445,
+            "meets_target": true,
+            "n_accepted": 467,
+            "ratio_to_target": 0.9421841541755889,
+            "small_sample": false
+          },
+          "labbench-cloning": {
+            "ci": [
+              null,
+              null
+            ],
+            "coverage": 0.0,
+            "error_rate": null,
+            "n_accepted": 0
+          },
+          "labbench-db": {
+            "ci": [
+              0.012722215247890939,
+              0.31468704424151117
+            ],
+            "coverage": 0.026923076923076925,
+            "error_rate": 0.07142857142857142,
+            "meets_target": false,
+            "n_accepted": 14,
+            "ratio_to_target": 1.4285714285714284,
+            "small_sample": true
+          },
+          "labbench-litqa2": {
+            "ci": [
+              2.7755575615628914e-17,
+              0.3903342879021653
+            ],
+            "coverage": 0.03015075376884422,
+            "error_rate": 0.0,
+            "meets_target": true,
+            "n_accepted": 6,
+            "ratio_to_target": 0.0,
+            "small_sample": true
+          },
+          "labbench-protocol": {
+            "ci": [
+              0.019890887638544907,
+              0.434999705576656
+            ],
+            "coverage": 0.08333333333333333,
+            "error_rate": 0.1111111111111111,
+            "meets_target": false,
+            "n_accepted": 9,
+            "ratio_to_target": 2.222222222222222,
+            "small_sample": true
+          },
+          "labbench-seq": {
+            "ci": [
+              0.0,
+              0.11351339317396876
+            ],
+            "coverage": 0.05,
+            "error_rate": 0.0,
+            "meets_target": true,
+            "n_accepted": 30,
+            "ratio_to_target": 0.0,
+            "small_sample": false
+          },
+          "labbench-supp": {
+            "ci": [
+              5.551115123125783e-17,
+              0.5614970317550454
+            ],
+            "coverage": 0.036585365853658534,
+            "error_rate": 0.0,
+            "meets_target": true,
+            "n_accepted": 3,
+            "ratio_to_target": 0.0,
+            "small_sample": true
+          }
+        },
+        "tau": 0.9400000000000001,
+        "worst_transfer": {
+          "dataset": "chem",
+          "error_rate": 0.04794520547945205,
+          "label": "WMDP-Chem",
+          "ratio_to_target": 0.958904109589041
+        }
+      },
+      "labbench-seq": {
+        "label": "LB-SeqQA",
+        "targets": {
+          "bio": {
+            "ci": [
+              0.09419819458052972,
+              0.13018703766439635
+            ],
+            "coverage": 0.9206598586017282,
+            "error_rate": 0.11092150170648464,
+            "meets_target": false,
+            "n_accepted": 1172,
+            "ratio_to_target": 2.2184300341296925,
+            "small_sample": false
+          },
+          "bio-robust": {
+            "ci": [
+              0.12762828540209692,
+              0.17991322121031783
+            ],
+            "coverage": 0.8927250308261405,
+            "error_rate": 0.15193370165745856,
+            "meets_target": false,
+            "n_accepted": 724,
+            "ratio_to_target": 3.0386740331491713,
+            "small_sample": false
+          },
+          "chem": {
+            "ci": [
+              0.14759036233342016,
+              0.23163126738069817
+            ],
+            "coverage": 0.803921568627451,
+            "error_rate": 0.18597560975609756,
+            "meets_target": false,
+            "n_accepted": 328,
+            "ratio_to_target": 3.719512195121951,
+            "small_sample": false
+          },
+          "cyber": {
+            "ci": [
+              0.17900076661903788,
+              0.22545048098206102
+            ],
+            "coverage": 0.5752390538500252,
+            "error_rate": 0.20122484689413822,
+            "meets_target": false,
+            "n_accepted": 1143,
+            "ratio_to_target": 4.024496937882764,
+            "small_sample": false
+          },
+          "labbench-cloning": {
+            "ci": [
+              0.21380798904474121,
+              0.6740935542034926
+            ],
+            "coverage": 0.4375,
+            "error_rate": 0.42857142857142855,
+            "meets_target": false,
+            "n_accepted": 14,
+            "ratio_to_target": 8.571428571428571,
+            "small_sample": true
+          },
+          "labbench-db": {
+            "ci": [
+              0.31629116502617627,
+              0.4778035550738191
+            ],
+            "coverage": 0.26346153846153847,
+            "error_rate": 0.39416058394160586,
+            "meets_target": false,
+            "n_accepted": 137,
+            "ratio_to_target": 7.883211678832117,
+            "small_sample": false
+          },
+          "labbench-litqa2": {
+            "ci": [
+              0.41196037089885484,
+              0.6080713876874437
+            ],
+            "coverage": 0.4824120603015075,
+            "error_rate": 0.5104166666666666,
+            "meets_target": false,
+            "n_accepted": 96,
+            "ratio_to_target": 10.208333333333332,
+            "small_sample": false
+          },
+          "labbench-protocol": {
+            "ci": [
+              0.2848132354273476,
+              0.5092600815702724
+            ],
+            "coverage": 0.6388888888888888,
+            "error_rate": 0.391304347826087,
+            "meets_target": false,
+            "n_accepted": 69,
+            "ratio_to_target": 7.826086956521739,
+            "small_sample": false
+          },
+          "labbench-seq": {
+            "ci": [
+              0.02619025396973257,
+              0.07775727881059225
+            ],
+            "coverage": 0.44,
+            "error_rate": 0.045454545454545456,
+            "meets_target": true,
+            "n_accepted": 264,
+            "ratio_to_target": 0.9090909090909091,
+            "small_sample": false
+          },
+          "labbench-supp": {
+            "ci": [
+              0.2551963484266544,
+              0.5773997512461713
+            ],
+            "coverage": 0.3902439024390244,
+            "error_rate": 0.40625,
+            "meets_target": false,
+            "n_accepted": 32,
+            "ratio_to_target": 8.125,
+            "small_sample": false
+          }
+        },
+        "tau": 0.55,
+        "worst_transfer": {
+          "dataset": "labbench-litqa2",
+          "error_rate": 0.5104166666666666,
+          "label": "LB-LitQA2",
+          "ratio_to_target": 10.208333333333332
+        }
+      }
+    }
+  },
   "a1_confidence_semantics": {
     "best": "rescaled_pmax",
     "candidates": {

@@ -10,6 +10,8 @@ Experiment IDs map to the revision plan:
   A3  conditional error analysis            A8  position bias and chance baselines
   A4  selective prediction / routing signal A9  sensitivity (errors, quantisation)
   A5  circular evaluation                   A10 cost accounting
+  A11 repeatability control                 A13 option order as a steering surface
+  A12 label and format ablations            A14 confidence-cutoff transfer across tasks
 """
 import json
 import os
@@ -53,7 +55,11 @@ MODEL_VERSION = "jev-1.13.0"
 API_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 COLLECTION_DATES = "2026-09-19 to 2026-09-20"
 N_BOOT_CI = 2000         # resamples for the ECE / AUROC interval estimates
-CIRCULAR_KEYS = ["bio", "cyber"]
+
+# Datasets with a cyclic run on disk, in the canonical display order. Discovered rather
+# than hardcoded so that adding a run is a data-collection step, not a code edit: drop a
+# perm_<key>.json into raw/ and every block below picks it up.
+CIRCULAR_KEYS = [k for k in KEYS if os.path.exists(os.path.join(RAW, f"perm_{k}.json"))]
 
 
 # ===================================================================== A1
@@ -787,6 +793,195 @@ def a12_ablations(data):
     return out
 
 
+# ===================================================================== A13
+
+def a13_order_attack(data):
+    """Option order as a decision-steering surface.
+
+    The cyclic experiment establishes that reordering the options changes answers. This
+    block asks the deployment question instead: how much of the decision can be moved by
+    someone who controls only the order the options are listed in, and who changes
+    nothing whatsoever about their content?
+
+    Two quantities, reported for the rotation arm and for the byte-identical repeat arm
+    at a MATCHED budget of k calls per item, so the two arms cost the same and the
+    comparison is fair:
+
+      worst_case_accuracy  items answered correctly under EVERY presentation. This is an
+                           upper bound on an attack, not an achievable one: picking the
+                           worst ordering requires knowing the right answer, which a real
+                           adversary does not. It bounds the surface, nothing more.
+      steerable_fraction   items answered correctly under some presentations and
+                           incorrectly under others. This needs NO knowledge of the right
+                           answer -- someone who merely wants the decision to move away
+                           from its default can act on it -- so it is the quantity an
+                           operator should actually worry about.
+
+    The identical-repeat arm is the control and is not optional. A non-deterministic
+    endpoint produces a worst-of-k drop all by itself; without subtracting it, the whole
+    effect could be endpoint noise rather than ordering.
+    """
+    out = {"meta": {
+        "design": "worst-of-k and best-of-k over k presentations, matched budget",
+        "arms": "rotations (order + run-to-run variation) vs byte-identical repeats "
+                "(run-to-run variation alone)",
+        "caveat": "worst-of-k requires the gold label to select the worst presentation, "
+                  "so it is an upper bound on an attack; steerable_fraction does not",
+    }}
+    for k in CIRCULAR_KEYS:
+        rep = _load_json(f"repeat_{k}.json")
+        circ = load_circular(k)
+        if rep is None or circ is None:
+            continue
+        # Align on the items present in both arms, exactly as A11 does, so the ordering
+        # arm and the control arm are measured on the same questions.
+        cmap = {r["index"]: r for r in circ}
+        rep = [r for r in rep if r["index"] in cmap]
+        if not rep:
+            continue
+        gold = np.array([r["gold"] for r in rep])
+        order = [r["index"] for r in rep]
+        ch_id = np.array([r["choices_by_rep"] for r in rep])
+        ch_rot = np.array([cmap[i]["choices_by_rot"] for i in order])
+        n_items = len(gold)
+
+        entry = {"n_items": n_items,
+                 "n_calls_per_item": {"rotations": int(ch_rot.shape[1]),
+                                      "identical": int(ch_id.shape[1])}}
+        per_arm = {}
+        for arm, ch in (("rotations", ch_rot), ("identical", ch_id)):
+            hit = ch == gold[:, None]
+            always = hit.all(1).astype(float)     # correct under every presentation
+            ever = hit.any(1).astype(float)       # correct under at least one
+            single = hit[:, 0].astype(float)      # the default presentation
+            drop = boot_diff_ci(single, always)   # what the worst case costs
+            w_est, w_lo, w_hi = wilson(int(always.sum()), n_items)
+            b_est, b_lo, b_hi = wilson(int(ever.sum()), n_items)
+            s_est, s_lo, s_hi = wilson(int((ever - always).sum()), n_items)
+            per_arm[arm] = {
+                "acc_single": float(single.mean()),
+                "worst_case_accuracy": w_est, "worst_case_ci": [w_lo, w_hi],
+                "best_case_accuracy": b_est, "best_case_ci": [b_lo, b_hi],
+                "steerable_fraction": s_est, "steerable_ci": [s_lo, s_hi],
+                "worst_case_drop": drop[0], "worst_case_drop_ci": [drop[1], drop[2]],
+            }
+        entry["arms"] = per_arm
+
+        # The headline: what ordering adds on top of run-to-run variation. Paired over
+        # items, because the two arms cover the same questions.
+        a_rot = (ch_rot == gold[:, None]).all(1).astype(float)
+        a_id = (ch_id == gold[:, None]).all(1).astype(float)
+        s_rot = ((ch_rot == gold[:, None]).any(1) & ~(ch_rot == gold[:, None]).all(1)).astype(float)
+        s_id = ((ch_id == gold[:, None]).any(1) & ~(ch_id == gold[:, None]).all(1)).astype(float)
+        d_worst = boot_diff_ci(a_id, a_rot)
+        d_steer = boot_diff_ci(s_rot, s_id)
+        entry["order_attributable"] = {
+            "worst_case_accuracy_drop": d_worst[0],
+            "worst_case_accuracy_drop_ci": [d_worst[1], d_worst[2]],
+            "steerable_fraction_increase": d_steer[0],
+            "steerable_fraction_increase_ci": [d_steer[1], d_steer[2]],
+            "significant": bool(d_worst[1] > 0),
+        }
+        out[k] = entry
+    return out
+
+
+# ===================================================================== A14
+
+# An operator picking a confidence cutoff wants a guarantee of the form "at most this
+# many errors among the items I accept". 5% is the illustrative target; the shape of the
+# result does not depend on the particular value.
+TRANSFER_TARGET_ERROR = 0.05
+TRANSFER_MIN_ACCEPTED = 20   # below this a measured error rate is not informative
+
+
+def _tau_for_target(pmax, correct, target=TRANSFER_TARGET_ERROR,
+                    min_n=TRANSFER_MIN_ACCEPTED):
+    """Lowest confidence cutoff whose accepted set has an error rate at or below target.
+
+    Lowest, not any, because a higher cutoff trivially accepts fewer items: taking the
+    smallest one that works is the same as taking the largest coverage that works.
+    Returns None when no cutoff achieves the target at an informative sample size, which
+    is itself a finding for the weaker tasks.
+    """
+    pmax, correct = np.asarray(pmax, float), np.asarray(correct, float)
+    for t in sorted(set(pmax.tolist())):
+        m = pmax >= t
+        if m.sum() >= min_n and (1.0 - correct[m].mean()) <= target:
+            return float(t)
+    return None
+
+
+def a14_threshold_transfer(data):
+    """Does a confidence cutoff chosen on one task still work on another?
+
+    Pooled calibration is encouraging (A2), but an operator does not deploy against the
+    pool: they pick one cutoff and meet whatever task arrives. This fits a cutoff on each
+    dataset to hold errors at or below TRANSFER_TARGET_ERROR among accepted items, then
+    applies that same cutoff to every other dataset and records what it actually
+    delivers. The diagonal is the fit; the off-diagonal is the transfer.
+    """
+    out = {"meta": {"target_error": TRANSFER_TARGET_ERROR,
+                    "min_accepted": TRANSFER_MIN_ACCEPTED,
+                    "rule": "lowest cutoff meeting the target on the source dataset, "
+                            "then applied unchanged to the target dataset"},
+           "per_source": {}, "achievable": {}}
+    pool = {}
+    for k in KEYS:
+        rows = valid(data[k])
+        if not rows:
+            continue
+        pool[k] = (np.array([r["p_max"] for r in rows], float),
+                   np.array([1.0 if r["correct"] else 0.0 for r in rows], float))
+
+    # Can the target be met on this task at all, by any cutoff? For several LAB-Bench
+    # subtasks the answer is no, which is the cleanest statement the block produces.
+    for k, (p, c) in pool.items():
+        tau = _tau_for_target(p, c)
+        out["achievable"][k] = {
+            "label": LABEL[k], "achievable": tau is not None, "tau": tau,
+            "coverage": float((p >= tau).mean()) if tau is not None else 0.0,
+            "best_error_at_min_n": float(min(
+                [1.0 - c[p >= t].mean() for t in sorted(set(p.tolist()))
+                 if (p >= t).sum() >= TRANSFER_MIN_ACCEPTED] or [float("nan")])),
+        }
+
+    for src, (ps, cs) in pool.items():
+        tau = _tau_for_target(ps, cs)
+        if tau is None:
+            continue
+        row = {"tau": tau, "label": LABEL[src], "targets": {}}
+        for tgt, (pt, ct) in pool.items():
+            m = pt >= tau
+            n_acc = int(m.sum())
+            if n_acc == 0:
+                row["targets"][tgt] = {"n_accepted": 0, "coverage": 0.0,
+                                       "error_rate": None, "ci": [None, None]}
+                continue
+            est, lo, hi = wilson(int((1.0 - ct[m]).sum()), n_acc)
+            row["targets"][tgt] = {
+                "n_accepted": n_acc, "coverage": float(m.mean()),
+                "error_rate": est, "ci": [lo, hi],
+                "meets_target": bool(est <= TRANSFER_TARGET_ERROR),
+                "ratio_to_target": float(est / TRANSFER_TARGET_ERROR),
+                # A cutoff tuned on a strong task accepts only a handful of items on a
+                # weak one. Three accepted items can read as a 100% error rate, which is
+                # noise, not a finding -- so such cells are flagged and never quoted.
+                "small_sample": bool(n_acc < TRANSFER_MIN_ACCEPTED),
+            }
+        # The worst miss is the headline: how badly can this cutoff fail elsewhere? Only
+        # cells with an informative number of accepted items are eligible.
+        misses = [(t, v["error_rate"]) for t, v in row["targets"].items()
+                  if t != src and v["error_rate"] is not None and not v["small_sample"]]
+        if misses:
+            worst = max(misses, key=lambda x: x[1])
+            row["worst_transfer"] = {"dataset": worst[0], "label": LABEL[worst[0]],
+                                     "error_rate": worst[1],
+                                     "ratio_to_target": worst[1] / TRANSFER_TARGET_ERROR}
+        out["per_source"][src] = row
+    return out
+
+
 # ===================================================================== A10
 
 def a10_cost(data):
@@ -918,6 +1113,8 @@ def main():
         "a10_cost": a10_cost(data),
         "a11_repeatability": a11_repeatability(data),
         "a12_ablations": a12_ablations(data),
+        "a13_order_attack": a13_order_attack(data),
+        "a14_threshold_transfer": a14_threshold_transfer(data),
     }
     os.makedirs(DERIVED, exist_ok=True)
     dump(stats, os.path.join(DERIVED, "stats.json"))

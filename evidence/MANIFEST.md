@@ -12,7 +12,7 @@ Raw inputs
                                          original option indices
 ```
 
-202 macros defined in `manuscript/numbers.tex`.
+245 macros defined in `manuscript/numbers.tex`.
 
 | macro | value | stats.json block | produced by |
 |---|---|---|---|
@@ -230,3 +230,48 @@ Raw inputs
 | `\statEceLitQA` | 0.168 | `` | `` |
 | `\statEceSupp` | 0.193 | `` | `` |
 | `\statCascadeCyberRandForty` | 64.8% | `a6_cascade.cyber.random_router` | `analyze.py:a6_cascade` |
+| **A13: option order as a decision-steering surface** | | | |
+| `\statAtkSingleBio` | 85.4% | `` | `` |
+| `\statAtkSingleCyber` | 63.3% | `` | `` |
+| `\statAtkWorstRotBio` | 80.0% | `` | `` |
+| `\statAtkWorstRotCyber` | 49.2% | `` | `` |
+| `\statAtkBestRotBio` | 89.5% | `` | `` |
+| `\statAtkBestRotCyber` | 79.9% | `` | `` |
+| `\statAtkWorstIdentBio` | 84.1% | `` | `` |
+| `\statAtkWorstIdentCyber` | 60.1% | `` | `` |
+| `\statAtkSteerRotBio` | 9.5% | `` | `` |
+| `\statAtkSteerRotCyber` | 30.6% | `` | `` |
+| `\statAtkSteerIdentBio` | 2.0% | `` | `` |
+| `\statAtkSteerIdentCyber` | 6.5% | `` | `` |
+| `\statAtkDropRotBio` | 5.4 | `` | `` |
+| `\statAtkDropRotCyber` | 14.0 | `` | `` |
+| `\statAtkDropIdentBio` | 1.3 | `` | `` |
+| `\statAtkDropIdentCyber` | 3.2 | `` | `` |
+| `\statAtkOrderDropBio` | 4.2 | `` | `` |
+| `\statAtkOrderDropCIBio` | [3.0, 5.3] | `` | `` |
+| `\statAtkOrderDropCICyber` | [9.4, 12.4] | `` | `` |
+| `\statAtkOrderDropCyber` | 10.9 | `` | `` |
+| `\statAtkOrderSteerBio` | 7.5 | `` | `` |
+| `\statAtkOrderSteerCyber` | 24.2 | `` | `` |
+| `\statAtkNItemsBio` | 1{,}273 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statAtkNItemsCyber` | 1{,}987 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| **A14: confidence cutoffs across tasks** | | | |
+| `\statThrTarget` | 5% | `` | `` |
+| `\statThrNAchievable` | 5 | `` | `` |
+| `\statThrNUnachievable` | 5 | `` | `` |
+| `\statThrNDatasets` | 10 | `` | `` |
+| `\statThrUnachievableList` | LB-CloningScenarios, LB-DbQA, LB-LitQA2, LB-ProtocolQA, LB-SuppQA | `` | `` |
+| `\statThrTauBio` | 0.87 | `` | `` |
+| `\statThrCovBio` | 69% | `` | `` |
+| `\statThrBioOnBio` | 5.0% | `` | `` |
+| `\statThrBioOnCyber` | 9.0% | `` | `` |
+| `\statThrBioWorstLabel` | LB-LitQA2 | `` | `` |
+| `\statThrBioWorst` | 40.0% | `` | `` |
+| `\statThrBioWorstRatio` | 8.0 | `` | `` |
+| `\statThrBioWorstN` | 25 | `` | `` |
+| `\statThrTauCyber` | 0.94 | `` | `` |
+| `\statThrCovCyber` | 24% | `` | `` |
+| `\statEceSpreadMin` | 0.033 | `` | `` |
+| `\statEceSpreadMax` | 0.193 | `` | `` |
+| `\statEceAdaptiveSupp` | 0.185 | `` | `` |
+| `\statEceAdaptivePooled` | 0.033 | `a2_calibration` | `analyze.py:a2_calibration` |

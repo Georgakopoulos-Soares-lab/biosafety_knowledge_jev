@@ -7,13 +7,21 @@ indices, so rotations are directly comparable and can be averaged.
 Generalises the original four-option-only script to arbitrary n, which is required for the
 LAB-Bench subsets (2 to 10 options). --max-rotations caps the per-item cost for wide items.
 
+--all-permutations presents every one of the n! orderings rather than only the n
+rotations. Rotations preserve which option follows which, so they cannot detect any
+sensitivity that depends on adjacency; the exhaustive arm measures how much the
+rotation-only figure under-counts.
+
 Usage:
   TYPESAFE_API_KEY=... python3 run_circular.py cyber bio
   TYPESAFE_API_KEY=... python3 run_circular.py bio-robust --max-rotations 4
+  TYPESAFE_API_KEY=... python3 run_circular.py cyber --all-permutations --sample 500
 """
 import argparse
+import itertools
 import json
 import os
+import random
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -43,56 +51,101 @@ def load_items(subject):
     return items
 
 
-def run(subject, max_rot, label_mode):
+def cyclic_perms(n, max_rot=None):
+    """Rotations as explicit permutations: prompt position p shows original (p + rot) % n."""
+    n_rot = min(n, max_rot) if max_rot else n
+    return [tuple((p + rot) % n for p in range(n)) for rot in range(n_rot)]
+
+
+def all_perms(n):
+    """Every ordering of n options.
+
+    Rotations are only n of the n! orderings, and they share a property the others do
+    not: they preserve which option follows which. So a rotation-only measurement cannot
+    see any sensitivity that depends on adjacency, which is why the instability it
+    reports is a lower bound. Enumerating the full set measures how loose that bound is.
+    """
+    return list(itertools.permutations(range(n)))
+
+
+def plan_perms(items, max_rot, use_all, perm_width):
+    """Per item, the list of orderings to present it under."""
+    plan = []
+    for it in items:
+        n = len(it["choices"])
+        if use_all:
+            # Factorial growth makes this affordable only at the width we target.
+            plan.append(all_perms(n) if n == perm_width else [])
+        else:
+            plan.append(cyclic_perms(n, max_rot))
+    return plan
+
+
+def run(subject, max_rot, label_mode, use_all=False, perm_width=4, sample=None,
+        seed=20260919):
     items = load_items(subject)
+    if use_all:
+        items = [it for it in items if len(it["choices"]) == perm_width]
+    if sample is not None and sample < len(items):
+        # Seeded, so the sampled subset is reproducible and reviewable.
+        idx = sorted(random.Random(seed).sample(range(len(items)), sample))
+        items = [items[j] for j in idx]
+
+    plan = plan_perms(items, max_rot, use_all, perm_width)
     session = make_session()
-    tasks = []
-    for i, it in enumerate(items):
-        n_rot = min(len(it["choices"]), max_rot) if max_rot else len(it["choices"])
-        tasks += [(i, rot) for rot in range(n_rot)]
-    print(f"[{subject}] {len(items)} items, {len(tasks)} calls", file=sys.stderr)
+    tasks = [(i, j) for i, perms in enumerate(plan) for j in range(len(perms))]
+    print(f"[{subject}] {len(items)} items, {len(tasks)} calls"
+          f"{' (all orderings)' if use_all else ''}", file=sys.stderr)
     out = {}
 
-    def work(i, rot):
+    def work(i, j):
         ch = items[i]["choices"]
         n = len(ch)
-        # Prompt position p shows the option originally at (p + rot) % n.
-        rotated = [ch[(p + rot) % n] for p in range(n)]
+        perm = plan[i][j]
+        # Prompt position p shows the option originally at perm[p].
+        presented = [ch[perm[p]] for p in range(n)]
         labels = labels_for(n, label_mode)
-        data, err = post(session, build_choice_payload(items[i]["question"], rotated, labels))
+        data, err = post(session, build_choice_payload(items[i]["question"], presented, labels))
         if err is not None:
-            return i, rot, None
+            return i, j, None
         p = parse_choice(data, labels)
         if p["chosen_pos"] < 0:
-            return i, rot, None
-        # Invert the rotation: map both the choice and the whole vector back to originals.
+            return i, j, None
+        # Invert: map both the choice and the whole vector back to original indices.
         probs_by_orig = [0.0] * n
         for pos in range(n):
-            probs_by_orig[(pos + rot) % n] = p["probs_by_position"][pos]
-        return i, rot, ((p["chosen_pos"] + rot) % n, probs_by_orig)
+            probs_by_orig[perm[pos]] = p["probs_by_position"][pos]
+        return i, j, (perm[p["chosen_pos"]], probs_by_orig)
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        futures = [ex.submit(work, i, rot) for i, rot in tasks]
+        futures = [ex.submit(work, i, j) for i, j in tasks]
         done = 0
         for fut in as_completed(futures):
-            i, rot, val = fut.result()
-            out[(i, rot)] = val
+            i, j, val = fut.result()
+            out[(i, j)] = val
             done += 1
             if done % 500 == 0:
                 print(f"[{subject}] {done}/{len(tasks)}", file=sys.stderr)
 
     recs, dropped = [], 0
     for i, it in enumerate(items):
-        n_rot = min(len(it["choices"]), max_rot) if max_rot else len(it["choices"])
-        per = [out.get((i, rot)) for rot in range(n_rot)]
-        if any(p is None for p in per):
+        per = [out.get((i, j)) for j in range(len(plan[i]))]
+        if not per or any(p is None for p in per):
             dropped += 1
             continue
-        recs.append({"index": it["index"], "gold": it["gold"],
-                     "n_options": len(it["choices"]),
-                     "choices_by_rot": [p[0] for p in per],
-                     "probs_by_rot": [p[1] for p in per]})
-    path = os.path.join(RAW, f"perm_{subject}.json")
+        rec = {"index": it["index"], "gold": it["gold"],
+               "n_options": len(it["choices"])}
+        if use_all:
+            rec.update({"perms": [list(p) for p in plan[i]],
+                        "choices_by_perm": [p[0] for p in per],
+                        "probs_by_perm": [p[1] for p in per]})
+        else:
+            # Unchanged on-disk shape, so every existing analysis block keeps working.
+            rec.update({"choices_by_rot": [p[0] for p in per],
+                        "probs_by_rot": [p[1] for p in per]})
+        recs.append(rec)
+    stem = "permall" if use_all else "perm"
+    path = os.path.join(RAW, f"{stem}_{subject}.json")
     with open(path, "w") as fh:
         json.dump(recs, fh)
     print(f"[{subject}] wrote {len(recs)} complete items ({dropped} dropped) -> {path}")
@@ -106,9 +159,19 @@ def main():
                     help="cap rotations per item; default is one per option")
     ap.add_argument("--label-mode", default="positional",
                     choices=["positional", "symbolic"])
+    ap.add_argument("--all-permutations", action="store_true",
+                    help="present every ordering, not only the rotations; writes "
+                         "permall_<subject>.json and restricts to --perm-width items")
+    ap.add_argument("--perm-width", type=int, default=4,
+                    help="option count to enumerate exhaustively (default 4 -> 24 calls "
+                         "per item); wider items are skipped because n! explodes")
+    ap.add_argument("--sample", type=int, default=None,
+                    help="evaluate a seeded random subset of this many items")
     args = ap.parse_args()
     for s in args.subjects:
-        run(s, args.max_rotations, args.label_mode)
+        run(s, args.max_rotations, args.label_mode,
+            use_all=args.all_permutations, perm_width=args.perm_width,
+            sample=args.sample)
 
 
 if __name__ == "__main__":

@@ -27,13 +27,11 @@ def table1():
     be = S["a7_breakeven"]
     L = [r"\begin{table*}[t]", r"\centering",
          r"\caption{Per-dataset results. \emph{Lift} is chance-adjusted accuracy, "
-         r"$(\mathrm{acc}-c)/(1-c)$, using each item's own option count $c=1/n$ rather than a "
-         r"single $25\%$ line, since option counts range from 2 to 10. ECE and AUROC are "
-         r"computed on $p_{\max}$ rather than on the vendor \texttt{confidence} field "
-         r"(Section~\ref{sec:uncertainty}). $P(\text{err}\mid p_{\max}\!\geq\!0.9)$ is the error "
-         r"rate given a confident answer, with Wilson intervals. \emph{Retained} is accuracy "
-         r"on the items kept when the least confident 40\% are withheld "
-         r"(Section~\ref{sec:selective}).}",
+         r"$(\mathrm{acc}-c)/(1-c)$, using each item's own $c=1/n$ since option counts "
+         r"range from 2 to 10. ECE and AUROC are on $p_{\max}$, not the vendor "
+         r"\texttt{confidence} field (Section~\ref{sec:uncertainty}). \emph{Retained} is "
+         r"accuracy with the least confident 40\% withheld "
+         r"(Section~\ref{sec:selective}). Intervals are Wilson.}",
          r"\label{tab:main}",
          r"\footnotesize",
          r"\setlength{\tabcolsep}{3.3pt}",
@@ -73,12 +71,50 @@ def table1():
     return "\n".join(L)
 
 
+def table2_order():
+    """Option order as a steering surface, against the byte-identical control.
+
+    Both arms spend four calls per item, so the rows are directly comparable and the
+    difference between them is what re-presentation costs rather than what extra calls buy.
+    """
+    a13 = S["a13_order_attack"]
+    keys = [k for k in ("bio", "cyber") if k in a13]
+    L = [r"\begin{table}[t]", r"\centering",
+         r"\caption{Option order as a decision-steering surface, at a matched budget of "
+         r"four calls per item. \emph{Worst case}: correct under \emph{every} "
+         r"presentation. \emph{Steerable}: correct under some and incorrect under others. "
+         r"The \emph{identical} rows repeat one prompt byte for byte, isolating "
+         r"run-to-run variation, so the difference between the rows is what order "
+         r"contributes.}",
+         r"\label{tab:order}", r"\footnotesize",
+         r"\setlength{\tabcolsep}{4pt}",
+         r"\begin{tabular}{@{}llccc@{}}", r"\toprule",
+         r"Dataset & presentations & worst case & best case & steerable \\", r"\midrule"]
+    for k in keys:
+        e = a13[k]
+        for arm, name in (("identical", "identical (control)"), ("rotations", "4 rotations")):
+            v = e["arms"][arm]
+            cell = LABEL[k] if arm == "identical" else ""
+            L.append(f"{cell} & {name} & {v['worst_case_accuracy']:.3f} & "
+                     f"{v['best_case_accuracy']:.3f} & {v['steerable_fraction']:.3f} \\\\")
+        oa = e["order_attributable"]
+        L.append(r"\cmidrule(l){2-5}")
+        L.append(f" & \\emph{{due to order}} & "
+                 f"$-${100 * oa['worst_case_accuracy_drop']:.1f}~pp & -- & "
+                 f"$+${100 * oa['steerable_fraction_increase']:.1f}~pp \\\\")
+        if k != keys[-1]:
+            L.append(r"\midrule")
+    L += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    return "\n".join(L)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "table1_main.tex")
-    with open(path, "w") as fh:
-        fh.write(table1() + "\n")
-    print(f"  wrote {path}")
+    for name, body in (("table1_main.tex", table1()), ("table2_order.tex", table2_order())):
+        path = os.path.join(OUT, name)
+        with open(path, "w") as fh:
+            fh.write(body + "\n")
+        print(f"  wrote {path}")
 
 
 if __name__ == "__main__":

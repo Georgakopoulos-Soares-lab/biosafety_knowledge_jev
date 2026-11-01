@@ -99,7 +99,7 @@ def load_rows(subject):
     return df.to_dict("records")
 
 
-def run(subject, label_mode, fmt, out_path):
+def run(subject, label_mode, fmt, out_path, order_mode="original"):
     rows = load_rows(subject)
     session = make_session()
     started = utc_now()
@@ -108,28 +108,40 @@ def run(subject, label_mode, fmt, out_path):
     def work(i, row):
         choices = list(row["choices"])
         n = len(choices)
+        gold_idx = int(row["answer"])
+        # Prompt position p shows the option originally at perm[p]. Reversal is the
+        # cheapest ordering outside the cyclic group, so it tests on every dataset -- the
+        # wide LAB-Bench ones included -- whether the effect is an artefact of rotations.
+        perm = list(range(n - 1, -1, -1)) if order_mode == "reversed" else list(range(n))
+        presented = [choices[perm[p]] for p in range(n)]
         # Per-item rng keyed on the index, so a rerun reproduces the same label assignment.
         rng = random.Random(LABEL_SEED + i)
         labels = labels_for(n, label_mode, rng)
-        payload = build_choice_payload(row["question"], choices, labels, fmt)
+        payload = build_choice_payload(row["question"], presented, labels, fmt)
         data, err = post(session, payload)
-        gold_idx = int(row["answer"])
         rec = {"subject": subject, "index": i, "question": row["question"],
                "choices": choices, "gold_idx": gold_idx,
                "labels": labels, "label_mode": label_mode, "format_mode": fmt,
-               "error": err}
+               "order_mode": order_mode, "error": err}
         if err is None:
             p = parse_choice(data, labels)
+            # Everything below is reported against ORIGINAL option indices, so a reversed
+            # run is directly comparable to the baseline item by item.
+            pred_orig = perm[p["chosen_pos"]] if 0 <= p["chosen_pos"] < n else -1
+            probs_by_orig = [0.0] * n
+            for pos in range(n):
+                probs_by_orig[perm[pos]] = p["probs_by_position"][pos]
+            gold_pos = perm.index(gold_idx) if gold_idx < n else None
             rec.update({
                 "model_version": p["model_version"],
                 "usage": p["usage"],
-                "pred_idx": p["chosen_pos"],          # position, which indexes `choices`
+                "pred_idx": pred_orig,                # original index, as in the baseline
                 "pred_label": p["chosen_label"],
-                "gold_label": labels[gold_idx] if gold_idx < n else None,
-                "correct": p["chosen_pos"] == gold_idx,
+                "gold_label": labels[gold_pos] if gold_pos is not None else None,
+                "correct": pred_orig == gold_idx,
                 "confidence": p["confidence"],
                 # keyed by option index, not by label, so arms stay comparable
-                "probabilities": {str(j): v for j, v in enumerate(p["probs_by_position"])},
+                "probabilities": {str(j): v for j, v in enumerate(probs_by_orig)},
             })
         else:
             rec.update({"pred_idx": -1, "pred_label": None, "gold_label": None,
@@ -171,6 +183,9 @@ def main():
     ap.add_argument("--label-mode", default="positional",
                     choices=["positional", "shuffled", "symbolic"])
     ap.add_argument("--format-mode", default="both", choices=["both", "state", "criteria"])
+    ap.add_argument("--order-mode", default="original", choices=["original", "reversed"],
+                    help="reversed presents the options back to front; results are "
+                         "reported against original indices so arms stay comparable")
     ap.add_argument("--tag", default=None, help="suffix for the output filename")
     args = ap.parse_args()
 
@@ -180,7 +195,7 @@ def main():
         if os.path.exists(out) and not args.tag:
             print(f"refusing to overwrite {out} without --tag", file=sys.stderr)
             continue
-        run(subject, args.label_mode, args.format_mode, out)
+        run(subject, args.label_mode, args.format_mode, out, args.order_mode)
 
 
 if __name__ == "__main__":

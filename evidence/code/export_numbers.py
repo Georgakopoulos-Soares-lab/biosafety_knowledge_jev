@@ -60,6 +60,7 @@ def build():
     a6, a7, a8 = S["a6_cascade"], S["a7_breakeven"], S["a8_position_bias"]
     a9, a10, a11 = S["a9_sensitivity"], S["a10_cost"], S["a11_repeatability"]
     a12 = S["a12_ablations"]
+    a13, a14 = S["a13_order_attack"], S["a14_threshold_transfer"]
     cb = a8["chance_baselines"]
     cy, bi = a5["cyber"], a5["bio"]
     M = {}
@@ -307,6 +308,60 @@ def build():
     M["statEceLitQA"] = num(cal["labbench-litqa2"]["on_pmax"]["ece_fixed"])
     M["statEceSupp"] = num(cal["labbench-supp"]["on_pmax"]["ece_fixed"])
     M["statCascadeCyberRandForty"] = pct(r40["accuracy"])
+
+    # ---- A13: option order as a decision-steering surface
+    for key, tag in (("cyber", "Cyber"), ("bio", "Bio")):
+        if key not in a13:
+            continue
+        e = a13[key]
+        rot, idt, oa = e["arms"]["rotations"], e["arms"]["identical"], e["order_attributable"]
+        M[f"statAtkSingle{tag}"] = pct(rot["acc_single"])
+        M[f"statAtkWorstRot{tag}"] = pct(rot["worst_case_accuracy"])
+        M[f"statAtkBestRot{tag}"] = pct(rot["best_case_accuracy"])
+        M[f"statAtkWorstIdent{tag}"] = pct(idt["worst_case_accuracy"])
+        M[f"statAtkSteerRot{tag}"] = pct(rot["steerable_fraction"])
+        M[f"statAtkSteerIdent{tag}"] = pct(idt["steerable_fraction"])
+        # The drop an adversary could cause, and the part of it ordering is responsible
+        # for once run-to-run variation is subtracted.
+        M[f"statAtkDropRot{tag}"] = ppu(rot["worst_case_drop"])
+        M[f"statAtkDropIdent{tag}"] = ppu(idt["worst_case_drop"])
+        M[f"statAtkOrderDrop{tag}"] = ppu(oa["worst_case_accuracy_drop"])
+        M[f"statAtkOrderDropCI{tag}"] = (
+            f"[{ppu(oa['worst_case_accuracy_drop_ci'][0])}, "
+            f"{ppu(oa['worst_case_accuracy_drop_ci'][1])}]")
+        M[f"statAtkOrderSteer{tag}"] = ppu(oa["steerable_fraction_increase"])
+        M[f"statAtkNItems{tag}"] = comma(e["n_items"])
+
+    # ---- A14: confidence cutoffs across tasks
+    ach = a14["achievable"]
+    M["statThrTarget"] = pct(a14["meta"]["target_error"], 0)
+    M["statThrNAchievable"] = str(sum(1 for v in ach.values() if v["achievable"]))
+    M["statThrNUnachievable"] = str(sum(1 for v in ach.values() if not v["achievable"]))
+    M["statThrNDatasets"] = str(len(ach))
+    M["statThrUnachievableList"] = ", ".join(
+        v["label"] for k, v in ach.items() if not v["achievable"])
+    src = a14["per_source"]
+    if "bio" in src:
+        b = src["bio"]
+        M["statThrTauBio"] = num(b["tau"], 2)
+        M["statThrCovBio"] = pct(ach["bio"]["coverage"], 0)
+        M["statThrBioOnBio"] = pct(b["targets"]["bio"]["error_rate"])
+        M["statThrBioOnCyber"] = pct(b["targets"]["cyber"]["error_rate"])
+        if "worst_transfer" in b:
+            w = b["worst_transfer"]
+            M["statThrBioWorstLabel"] = w["label"]
+            M["statThrBioWorst"] = pct(w["error_rate"])
+            M["statThrBioWorstRatio"] = num(w["ratio_to_target"], 1)
+            M["statThrBioWorstN"] = str(b["targets"][w["dataset"]]["n_accepted"])
+    if "cyber" in src:
+        M["statThrTauCyber"] = num(src["cyber"]["tau"], 2)
+        M["statThrCovCyber"] = pct(ach["cyber"]["coverage"], 0)
+    # Spread of per-task calibration, the reason a pooled figure cannot set a cutoff.
+    eces = [cal[k]["on_pmax"]["ece_fixed"] for k in cal]
+    M["statEceSpreadMin"] = num(min(eces))
+    M["statEceSpreadMax"] = num(max(eces))
+    M["statEceAdaptiveSupp"] = num(cal["labbench-supp"]["on_pmax"]["ece_adaptive"])
+    M["statEceAdaptivePooled"] = num(a2["pooled"]["on_pmax"]["ece_adaptive"])
     return M
 
 

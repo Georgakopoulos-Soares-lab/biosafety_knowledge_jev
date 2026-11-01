@@ -90,6 +90,24 @@ checks = [
      all(abs(S["a7_breakeven"][k]["by_deferral"]["0.4"]["retained_accuracy"]
              - S["a4_selective_prediction"]["risk_coverage"][k]["acc_at_coverage"]["0.6"])
          < 1e-9 for k in S["a7_breakeven"])),
+    # The worst-case drop is only attributable to option order if it survives the
+    # byte-identical control. Without this the headline could be endpoint noise.
+    ("worst-case drop under rotations exceeds the identical-call control",
+     all(S["a13_order_attack"][k]["arms"]["rotations"]["worst_case_accuracy"]
+         < S["a13_order_attack"][k]["arms"]["identical"]["worst_case_accuracy"]
+         for k in S["a13_order_attack"] if k != "meta")),
+    ("the order-attributable drop excludes zero on both suites",
+     all(S["a13_order_attack"][k]["order_attributable"]["significant"]
+         for k in S["a13_order_attack"] if k != "meta")),
+    # A cutoff tuned on a strong task accepts few items on a weak one, and a 100% error
+    # rate on three items is noise. Never quote a transfer cell below the sample floor.
+    ("every quoted worst-transfer cell clears the minimum accepted count",
+     all(not v["targets"][v["worst_transfer"]["dataset"]]["small_sample"]
+         for v in S["a14_threshold_transfer"]["per_source"].values()
+         if "worst_transfer" in v)),
+    ("the pooled calibration figure is better than the worst per-task figure",
+     S["a2_calibration"]["pooled"]["on_pmax"]["ece_fixed"]
+     < max(v["on_pmax"]["ece_fixed"] for v in S["a2_calibration"]["per_dataset"].values())),
 ]
 for label, ok in checks:
     if not ok:

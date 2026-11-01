@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{Per-dataset results. \emph{Lift} is chance-adjusted accuracy, $(\mathrm{acc}-c)/(1-c)$, using each item's own option count $c=1/n$ rather than a single $25\%$ line, since option counts range from 2 to 10. ECE and AUROC are computed on $p_{\max}$ rather than on the vendor \texttt{confidence} field (Section~\ref{sec:uncertainty}). $P(\text{err}\mid p_{\max}\!\geq\!0.9)$ is the error rate given a confident answer, with Wilson intervals. \emph{Retained} is accuracy on the items kept when the least confident 40\% are withheld (Section~\ref{sec:selective}).}
+\caption{Per-dataset results. \emph{Lift} is chance-adjusted accuracy, $(\mathrm{acc}-c)/(1-c)$, using each item's own $c=1/n$ since option counts range from 2 to 10. ECE and AUROC are on $p_{\max}$, not the vendor \texttt{confidence} field (Section~\ref{sec:uncertainty}). \emph{Retained} is accuracy with the least confident 40\% withheld (Section~\ref{sec:selective}). Intervals are Wilson.}
 \label{tab:main}
 \footnotesize
 \setlength{\tabcolsep}{3.3pt}

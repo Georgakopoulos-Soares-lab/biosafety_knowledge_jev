@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\caption{Option order as a decision-steering surface, at a matched budget of four calls per item. \emph{Worst case}: correct under \emph{every} presentation. \emph{Steerable}: correct under some and incorrect under others. The \emph{identical} rows repeat one prompt byte for byte, isolating run-to-run variation, so the difference between the rows is what order contributes.}
+\label{tab:order}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Dataset & presentations & worst case & best case & steerable \\
+\midrule
+WMDP-Bio & identical (control) & 0.841 & 0.861 & 0.020 \\
+ & 4 rotations & 0.800 & 0.895 & 0.095 \\
+\cmidrule(l){2-5}
+ & \emph{due to order} & $-$4.2~pp & -- & $+$7.5~pp \\
+\midrule
+WMDP-Cyber & identical (control) & 0.601 & 0.666 & 0.065 \\
+ & 4 rotations & 0.492 & 0.799 & 0.306 \\
+\cmidrule(l){2-5}
+ & \emph{due to order} & $-$10.9~pp & -- & $+$24.2~pp \\
+\bottomrule
+\end{tabular}
+\end{table}
