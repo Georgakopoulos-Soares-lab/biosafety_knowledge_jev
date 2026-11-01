@@ -8,7 +8,7 @@ import json
 import math
 import os
 
-from common import DERIVED
+from common import DERIVED, LABEL
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TARGET = os.path.join(ROOT, "manuscript", "numbers.tex")
@@ -331,6 +331,30 @@ def build():
             f"{ppu(oa['worst_case_accuracy_drop_ci'][1])}]")
         M[f"statAtkOrderSteer{tag}"] = ppu(oa["steerable_fraction_increase"])
         M[f"statAtkNItems{tag}"] = comma(e["n_items"])
+
+    # Breadth of the order result, now that it is no longer two datasets.
+    atk = {k: v for k, v in a13.items() if k != "meta"}
+    M["statAtkNDatasets"] = str(len(atk))
+    M["statAtkNSignificant"] = str(sum(v["order_attributable"]["significant"]
+                                       for v in atk.values()))
+    M["statAtkNMixedWidth"] = str(sum(v.get("mixed_option_counts", False)
+                                      for v in atk.values()))
+    incs = {k: v["order_attributable"]["steerable_fraction_increase"] for k, v in atk.items()}
+    M["statAtkOrderMin"] = ppu(min(incs.values()))
+    M["statAtkOrderMax"] = ppu(max(incs.values()))
+    steer = {k: v["arms"]["rotations"]["steerable_fraction"] for k, v in atk.items()}
+    worst_k = max(steer, key=steer.get)
+    M["statAtkWorstLabel"] = LABEL[worst_k]
+    M["statAtkWorstSteer"] = pct(steer[worst_k])
+    # Does robustness to rewording buy robustness to reordering? The paraphrase set
+    # answers that directly, so the comparison is worth a macro rather than prose.
+    if "bio-robust" in atk:
+        M["statAtkSteerRotBioRobust"] = pct(atk["bio-robust"]["arms"]["rotations"]["steerable_fraction"])
+    if "chem" in atk:
+        M["statAtkSteerRotChem"] = pct(atk["chem"]["arms"]["rotations"]["steerable_fraction"])
+    a5m = S["a5_circular"].get("meta", {})
+    M["statCircNDatasets"] = str(len(atk))
+    M["statCircMixedList"] = ", ".join(LABEL[k] for k in a5m.get("excluded_mixed_width", []))
 
     # ---- A14: confidence cutoffs across tasks
     ach = a14["achievable"]

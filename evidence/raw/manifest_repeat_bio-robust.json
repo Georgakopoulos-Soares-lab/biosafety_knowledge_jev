@@ -1,0 +1,15 @@
+{
+  "run": "identical:bio-robust",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model_alias": "jev-1.13.0",
+  "model_version": "jev-1.13.0",
+  "started_utc": "2026-11-01T14:55:39+00:00",
+  "finished_utc": "2026-11-01T14:56:09+00:00",
+  "n_calls": 3244,
+  "repeats": 4,
+  "dropped_items": 0,
+  "usage_totals": {
+    "input_tokens": 1531832,
+    "output_tokens": 145980
+  }
+}

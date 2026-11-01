@@ -1,0 +1,15 @@
+{
+  "run": "identical:labbench-litqa2",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model_alias": "jev-1.13.0",
+  "model_version": "jev-1.13.0",
+  "started_utc": "2026-11-01T14:57:56+00:00",
+  "finished_utc": "2026-11-01T14:58:05+00:00",
+  "n_calls": 796,
+  "repeats": 4,
+  "dropped_items": 0,
+  "usage_totals": {
+    "input_tokens": 338976,
+    "output_tokens": 37920
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "run": "identical:labbench-db",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model_alias": "jev-1.13.0",
+  "model_version": "jev-1.13.0",
+  "started_utc": "2026-11-01T14:56:09+00:00",
+  "finished_utc": "2026-11-01T14:56:31+00:00",
+  "n_calls": 2080,
+  "repeats": 4,
+  "dropped_items": 0,
+  "usage_totals": {
+    "input_tokens": 2423124,
+    "output_tokens": 93600
+  }
+}

@@ -27,11 +27,9 @@ def table1():
     be = S["a7_breakeven"]
     L = [r"\begin{table*}[t]", r"\centering",
          r"\caption{Per-dataset results. \emph{Lift} is chance-adjusted accuracy, "
-         r"$(\mathrm{acc}-c)/(1-c)$, using each item's own $c=1/n$ since option counts "
-         r"range from 2 to 10. ECE and AUROC are on $p_{\max}$, not the vendor "
-         r"\texttt{confidence} field (Section~\ref{sec:uncertainty}). \emph{Retained} is "
-         r"accuracy with the least confident 40\% withheld "
-         r"(Section~\ref{sec:selective}). Intervals are Wilson.}",
+         r"$(\mathrm{acc}-c)/(1-c)$, with each item's own $c=1/n$. ECE and AUROC are on "
+         r"$p_{\max}$, not the vendor \texttt{confidence} field. \emph{Retained} withholds "
+         r"the least confident 40\%. Intervals are Wilson.}",
          r"\label{tab:main}",
          r"\footnotesize",
          r"\setlength{\tabcolsep}{3.3pt}",
@@ -78,32 +76,34 @@ def table2_order():
     difference between them is what re-presentation costs rather than what extra calls buy.
     """
     a13 = S["a13_order_attack"]
-    keys = [k for k in ("bio", "cyber") if k in a13]
+    cb = S["a8_position_bias"]["chance_baselines"]
+    keys = [k for k in KEYS if k in a13]
     L = [r"\begin{table}[t]", r"\centering",
-         r"\caption{Option order as a decision-steering surface, at a matched budget of "
-         r"four calls per item. \emph{Worst case}: correct under \emph{every} "
-         r"presentation. \emph{Steerable}: correct under some and incorrect under others. "
-         r"The \emph{identical} rows repeat one prompt byte for byte, isolating "
-         r"run-to-run variation, so the difference between the rows is what order "
-         r"contributes.}",
+         r"\caption{Option order as a decision-steering surface. \emph{ident.} is four "
+         r"byte-identical calls, isolating run-to-run variation; \emph{rot.} is four "
+         r"cyclic rotations, which add option order. Equal budget, so the difference is "
+         r"what re-presentation costs. \emph{Worst}: correct under \emph{every} "
+         r"presentation, an upper bound since choosing the worst needs the answer. "
+         r"\emph{Steerable}: correct under some and incorrect under others, which does "
+         r"not.}",
          r"\label{tab:order}", r"\footnotesize",
-         r"\setlength{\tabcolsep}{4pt}",
-         r"\begin{tabular}{@{}llccc@{}}", r"\toprule",
-         r"Dataset & presentations & worst case & best case & steerable \\", r"\midrule"]
+         r"\setlength{\tabcolsep}{3pt}",
+         r"\begin{tabular}{@{}lrcccccc@{}}", r"\toprule",
+         r"& & & \multicolumn{2}{c}{worst case} & \multicolumn{2}{c}{steerable} & due to \\",
+         r"\cmidrule(lr){4-5}\cmidrule(lr){6-7}",
+         r"Dataset & opts. & single & ident. & rot. & ident. & rot. & order \\",
+         r"\midrule"]
     for k in keys:
         e = a13[k]
-        for arm, name in (("identical", "identical (control)"), ("rotations", "4 rotations")):
-            v = e["arms"][arm]
-            cell = LABEL[k] if arm == "identical" else ""
-            L.append(f"{cell} & {name} & {v['worst_case_accuracy']:.3f} & "
-                     f"{v['best_case_accuracy']:.3f} & {v['steerable_fraction']:.3f} \\\\")
+        idt, rot = e["arms"]["identical"], e["arms"]["rotations"]
         oa = e["order_attributable"]
-        L.append(r"\cmidrule(l){2-5}")
-        L.append(f" & \\emph{{due to order}} & "
-                 f"$-${100 * oa['worst_case_accuracy_drop']:.1f}~pp & -- & "
+        c = cb.get(k, {})
+        lo, hi = c.get("min_options"), c.get("max_options")
+        opts = (str(lo) if lo == hi else f"{lo}--{hi}") if lo else "--"
+        L.append(f"{LABEL[k]} & {opts} & {rot['acc_single']:.3f} & "
+                 f"{idt['worst_case_accuracy']:.3f} & {rot['worst_case_accuracy']:.3f} & "
+                 f"{idt['steerable_fraction']:.3f} & {rot['steerable_fraction']:.3f} & "
                  f"$+${100 * oa['steerable_fraction_increase']:.1f}~pp \\\\")
-        if k != keys[-1]:
-            L.append(r"\midrule")
     L += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
     return "\n".join(L)
 

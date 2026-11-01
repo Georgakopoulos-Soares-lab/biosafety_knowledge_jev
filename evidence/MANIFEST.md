@@ -12,33 +12,33 @@ Raw inputs
                                          original option indices
 ```
 
-245 macros defined in `manuscript/numbers.tex`.
+256 macros defined in `manuscript/numbers.tex`.
 
 | macro | value | stats.json block | produced by |
 |---|---|---|---|
 | **scale of the study** | | | |
 | `\statNItems` | 6{,}020 | `headline` | `analyze.py:headline` |
 | `\statNDatasets` | 10 | `headline` | `analyze.py:headline` |
-| `\statNCallsTotal` | 19{,}060 | `a10_cost` | `analyze.py:a10_cost` |
+| `\statNCallsTotal` | 29{,}165 | `a10_cost` | `analyze.py:a10_cost` |
 | `\statNCallsSingle` | 6{,}020 | `a10_cost` | `analyze.py:a10_cost` |
-| `\statNCallsCircular` | 13{,}040 | `a10_cost` | `analyze.py:a10_cost` |
-| `\statUsdTotal` | 0.57 | `a10_cost` | `analyze.py:a10_cost` |
-| `\statInputTokens` | 13.5 | `a10_cost` | `analyze.py:a10_cost` |
-| `\statTokensPerCall` | 709 | `a10_cost` | `analyze.py:a10_cost` |
+| `\statNCallsCircular` | 23{,}145 | `a10_cost` | `analyze.py:a10_cost` |
+| `\statUsdTotal` | 0.91 | `a10_cost` | `analyze.py:a10_cost` |
+| `\statInputTokens` | 21.6 | `a10_cost` | `analyze.py:a10_cost` |
+| `\statTokensPerCall` | 741 | `a10_cost` | `analyze.py:a10_cost` |
 | `\statModelVersion` | jev-1.13.0 | `` | `` |
 | `\statCollectionDates` | \mbox{2026-09-19} to \mbox{2026-09-20} | `` | `` |
 | `\statNBootCI` | 2{,}000 | `` | `` |
-| `\statLlmCheapUsd` | 0.71 | `` | `` |
+| `\statLlmCheapUsd` | 1.14 | `` | `` |
 | `\statLlmCheapRatio` | 1.3 | `` | `` |
-| `\statLlmMidUsd` | 84 | `` | `` |
-| `\statLlmMidRatio` | 148 | `` | `` |
-| `\statLlmTopUsd` | 421 | `` | `` |
-| `\statLlmTopRatio` | 742 | `` | `` |
+| `\statLlmMidUsd` | 131 | `` | `` |
+| `\statLlmMidRatio` | 144 | `` | `` |
+| `\statLlmTopUsd` | 654 | `` | `` |
+| `\statLlmTopRatio` | 720 | `` | `` |
 | `\statUsdPerM` | 0.042 | `a10_cost` | `analyze.py:a10_cost` |
 | `\statNErrors` | 1 | `a9_sensitivity` | `analyze.py:a9_sensitivity` |
 | `\statNItemsRaw` | 6{,}021 | `headline` | `analyze.py:headline` |
 | `\statNCallsAblation` | 13{,}040 | `` | `` |
-| `\statNCallsAll` | 57{,}140 | `a10_cost` | `analyze.py:a10_cost` |
+| `\statNCallsAll` | 67{,}245 | `a10_cost` | `analyze.py:a10_cost` |
 | `\statAurocMin` | 0.62 | `` | `` |
 | `\statAurocMax` | 0.86 | `` | `` |
 | `\statEceMin` | 0.033 | `` | `` |
@@ -240,6 +240,8 @@ Raw inputs
 | `\statAtkWorstIdentBio` | 84.1% | `` | `` |
 | `\statAtkWorstIdentCyber` | 60.1% | `` | `` |
 | `\statAtkSteerRotBio` | 9.5% | `` | `` |
+| `\statAtkSteerRotBioRobust` | 10.4% | `` | `` |
+| `\statAtkSteerRotChem` | 15.4% | `` | `` |
 | `\statAtkSteerRotCyber` | 30.6% | `` | `` |
 | `\statAtkSteerIdentBio` | 2.0% | `` | `` |
 | `\statAtkSteerIdentCyber` | 6.5% | `` | `` |
@@ -255,6 +257,15 @@ Raw inputs
 | `\statAtkOrderSteerCyber` | 24.2 | `` | `` |
 | `\statAtkNItemsBio` | 1{,}273 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
 | `\statAtkNItemsCyber` | 1{,}987 | `a3_conditional_error.per_dataset` | `analyze.py:a3_conditional_error` |
+| `\statAtkNDatasets` | 7 | `` | `` |
+| `\statAtkNSignificant` | 7 | `` | `` |
+| `\statAtkNMixedWidth` | 2 | `` | `` |
+| `\statAtkOrderMin` | 7.4 | `` | `` |
+| `\statAtkOrderMax` | 26.9 | `` | `` |
+| `\statAtkWorstLabel` | LB-DbQA | `` | `` |
+| `\statAtkWorstSteer` | 32.7% | `` | `` |
+| `\statCircNDatasets` | 7 | `` | `` |
+| `\statCircMixedList` | LB-SeqQA, LB-LitQA2 | `` | `` |
 | **A14: confidence cutoffs across tasks** | | | |
 | `\statThrTarget` | 5% | `` | `` |
 | `\statThrNAchievable` | 5 | `` | `` |

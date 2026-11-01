@@ -330,31 +330,65 @@ def _position_invariant_null(recs, seed=20260919, n_sim=200):
             "null_error_gap_mean": float(np.mean(gaps))}
 
 
+def _circ_calls(recs):
+    """Actual number of calls a cyclic run cost: items have as many rotations as options,
+    so a mixed-width dataset is not simply items x 4."""
+    return int(sum(len(r["choices_by_rot"]) for r in recs))
+
+
+def _rotation_widths(recs):
+    """How many rotations each item carries. More than one value means the dataset mixes
+    option counts, so there is no rectangular (item x rotation) array to form."""
+    return {len(r["choices_by_rot"]) for r in recs}
+
+
+def uniform_circular_keys():
+    """Circular datasets where every item has the same number of rotations.
+
+    A5, A6 and A11 compare rotation i against rotation i across items -- accuracy per
+    rotation, rotation spread, the prompt-position histogram -- which only means anything
+    when every item has the same rotations to compare. The LAB-Bench sets with 2 to 10
+    options do not, so they are reported in A13 instead, which is defined per item and
+    needs no such alignment.
+    """
+    keys = []
+    for k in CIRCULAR_KEYS:
+        recs = load_circular(k)
+        if recs and len(_rotation_widths(recs)) == 1:
+            keys.append(k)
+    return keys
+
+
 def a5_circular(data):
     """Cyclic evaluation with the control arm the earlier reshuffle test lacked:
     measure the correct -> wrong flow, not just wrong -> correct."""
-    out = {}
-    for k in CIRCULAR_KEYS:
+    out = {"meta": {"uniform_width_only": True,
+                    "datasets": uniform_circular_keys(),
+                    "excluded_mixed_width": [k for k in CIRCULAR_KEYS
+                                             if k not in uniform_circular_keys()]}}
+    for k in uniform_circular_keys():
         recs = load_circular(k)
         if recs is None:
             continue
+        n_rot = len(recs[0]["choices_by_rot"])
         gold = np.array([r["gold"] for r in recs])
         ch = np.array([r["choices_by_rot"] for r in recs])          # (N, 4 rotations)
         pr = np.array([r["probs_by_rot"] for r in recs])            # (N, 4 rot, 4 opts)
         N = len(recs)
-        accs = [float((ch[:, i] == gold).mean()) for i in range(4)]
+        accs = [float((ch[:, i] == gold).mean()) for i in range(n_rot)]
         consistent = (ch == ch[:, [0]]).all(1)
         ens_probs = pr.mean(1)
         ens = ens_probs.argmax(1)
-        maj = np.array([np.bincount(row, minlength=4).argmax() for row in ch])
+        maj = np.array([np.bincount(row, minlength=n_rot).argmax() for row in ch])
         c0 = ch[:, 0] == gold
         w2c = np.array([(ch[i, 1:] == gold[i]).any() for i in range(N)])
         c2w = np.array([(ch[i, 1:] != gold[i]).any() for i in range(N)])
         gain, glo, ghi = boot_diff_ci((ens == gold).astype(float), c0.astype(float))
-        chosen_pos = np.array([[(ch[i, r] - r) % 4 for r in range(4)] for i in range(N)])
-        cnt = np.bincount(chosen_pos.ravel(), minlength=4)
+        chosen_pos = np.array([[(ch[i, r] - r) % n_rot for r in range(n_rot)]
+                               for i in range(N)])
+        cnt = np.bincount(chosen_pos.ravel(), minlength=n_rot)
         out[k] = {
-            "n_items": N, "n_calls": N * 4,
+            "n_items": N, "n_calls": N * n_rot, "n_rotations": n_rot,
             "acc_per_rotation": accs,
             "acc_rotation_spread": float(max(accs) - min(accs)),
             "consistency": float(consistent.mean()),
@@ -403,7 +437,7 @@ def a6_cascade(data):
     ensemble. Both tiers are measured; nothing about a hypothetical stronger model
     is assumed. Cost is exact: 1 call at tier 1, 3 additional calls at tier 2."""
     out = {}
-    for k in CIRCULAR_KEYS:
+    for k in uniform_circular_keys():
         recs = load_circular(k)
         if recs is None:
             continue
@@ -660,7 +694,7 @@ def a11_repeatability(data):
     out = {"meta": {"design": "k identical calls at rotation 0; "
                               "k repeats x n rotations on a subsample",
                     "dispatch": "task order shuffled so repeats are never adjacent"}}
-    for k in CIRCULAR_KEYS:
+    for k in uniform_circular_keys():
         rep = _load_json(f"repeat_{k}.json")
         circ = load_circular(k)
         if rep is None or circ is None:
@@ -758,7 +792,7 @@ def a12_ablations(data):
     serialisation alone separates these.
     """
     out = {}
-    for k in CIRCULAR_KEYS:
+    for k in uniform_circular_keys():
         base = valid(data[k])
         n_opt = 4
         b_acc = float(np.mean([r["correct"] for r in base]))
@@ -839,22 +873,32 @@ def a13_order_attack(data):
         rep = [r for r in rep if r["index"] in cmap]
         if not rep:
             continue
-        gold = np.array([r["gold"] for r in rep])
+        gold = [r["gold"] for r in rep]
         order = [r["index"] for r in rep]
-        ch_id = np.array([r["choices_by_rep"] for r in rep])
-        ch_rot = np.array([cmap[i]["choices_by_rot"] for i in order])
+        # Per item rather than as a rectangular array: the LAB-Bench sets mix option
+        # counts, so an item with 10 options carries 10 rotations and one with 2 carries
+        # 2. Every quantity here is defined within an item ("correct under all of ITS
+        # presentations"), so ragged rotation counts are fine -- unlike A5, which compares
+        # rotation i across items and therefore needs a common width.
+        ch_id = [r["choices_by_rep"] for r in rep]
+        cmap_rot = {i: cmap[i]["choices_by_rot"] for i in order}
+        ch_rot = [cmap_rot[i] for i in order]
         n_items = len(gold)
 
+        widths = sorted({len(c) for c in ch_rot})
         entry = {"n_items": n_items,
-                 "n_calls_per_item": {"rotations": int(ch_rot.shape[1]),
-                                      "identical": int(ch_id.shape[1])}}
+                 "n_calls_per_item": {
+                     "rotations": widths[0] if len(widths) == 1 else [widths[0], widths[-1]],
+                     "identical": len(ch_id[0])},
+                 "mixed_option_counts": len(widths) > 1}
         per_arm = {}
-        for arm, ch in (("rotations", ch_rot), ("identical", ch_id)):
-            hit = ch == gold[:, None]
-            always = hit.all(1).astype(float)     # correct under every presentation
-            ever = hit.any(1).astype(float)       # correct under at least one
-            single = hit[:, 0].astype(float)      # the default presentation
-            drop = boot_diff_ci(single, always)   # what the worst case costs
+        for arm, chs in (("rotations", ch_rot), ("identical", ch_id)):
+            always = np.array([float(all(c == g for c in ch))
+                               for ch, g in zip(chs, gold)])
+            ever = np.array([float(any(c == g for c in ch))
+                             for ch, g in zip(chs, gold)])
+            single = np.array([float(ch[0] == g) for ch, g in zip(chs, gold)])
+            drop = boot_diff_ci(single, always)
             w_est, w_lo, w_hi = wilson(int(always.sum()), n_items)
             b_est, b_lo, b_hi = wilson(int(ever.sum()), n_items)
             s_est, s_lo, s_hi = wilson(int((ever - always).sum()), n_items)
@@ -869,10 +913,15 @@ def a13_order_attack(data):
 
         # The headline: what ordering adds on top of run-to-run variation. Paired over
         # items, because the two arms cover the same questions.
-        a_rot = (ch_rot == gold[:, None]).all(1).astype(float)
-        a_id = (ch_id == gold[:, None]).all(1).astype(float)
-        s_rot = ((ch_rot == gold[:, None]).any(1) & ~(ch_rot == gold[:, None]).all(1)).astype(float)
-        s_id = ((ch_id == gold[:, None]).any(1) & ~(ch_id == gold[:, None]).all(1)).astype(float)
+        def _always(chs):
+            return np.array([float(all(c == g for c in ch)) for ch, g in zip(chs, gold)])
+
+        def _steer(chs):
+            return np.array([float(any(c == g for c in ch) and not all(c == g for c in ch))
+                             for ch, g in zip(chs, gold)])
+
+        a_rot, a_id = _always(ch_rot), _always(ch_id)
+        s_rot, s_id = _steer(ch_rot), _steer(ch_id)
         d_worst = boot_diff_ci(a_id, a_rot)
         d_steer = boot_diff_ci(s_rot, s_id)
         entry["order_attributable"] = {
@@ -1022,10 +1071,10 @@ def a10_cost(data):
         else:
             circ_exact = False
             recs = load_circular(k) or []
-            tok_circ += per_dataset[k]["mean_input_tokens"] * len(recs) * 4
+            tok_circ += per_dataset[k]["mean_input_tokens"] * _circ_calls(recs)
 
     n_single = sum(len(valid(data[k])) for k in KEYS)
-    n_circ = sum(len(load_circular(k) or []) * 4 for k in CIRCULAR_KEYS)
+    n_circ = sum(_circ_calls(load_circular(k) or []) for k in CIRCULAR_KEYS)
     tok_total = tok_single + tok_circ
     usd = tok_total / 1e6 * USD_PER_M_INPUT_TOKENS
 
