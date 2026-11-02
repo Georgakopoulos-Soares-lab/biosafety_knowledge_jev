@@ -1,0 +1,107 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage[T1]{fontenc}\usepackage{lmodern}
+\usepackage{booktabs,longtable,array,xcolor,amsmath}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.6em}{}
+\definecolor{hl}{HTML}{B3402F}\definecolor{ok}{HTML}{3A7D44}
+\newcommand{\key}[1]{\textcolor{hl}{\textbf{#1}}}
+\setlength{\parskip}{0.45em}\setlength{\parindent}{0pt}
+\title{\textbf{What the revision did}\\[2pt]\large Reviewer-by-reviewer record, with the data behind each claim}
+\author{BioAISS 2026 (ACSAC workshop) --- revision R1}
+\date{Generated from \texttt{evidence/derived/stats.json}; no figure typed by hand}
+\begin{document}\maketitle
+\section*{In one paragraph}
+The reviewed version was read by both referees as a benchmark report on one vendor's model. The revision keeps the benchmark but leads with three things a score cannot show: the vendor's uncertainty field does not mean what it is named{,} a confidence cut-off fitted on one task fails on another{,} and the order the answer options are listed in can be used to move the decision. It adds 66{,}578 calls of new data across five new analyses{,} for \$2.07. Two of the new results corrected the authors rather than the reviewers{,} and both are reported as such.
+\section{A framing problem this report surfaces}
+The venue is biosecurity. \key{60\% of the 6{,}020 items are biology} (WMDP-Bio{,} its paraphrased variant{,} and six LAB-Bench subtasks); WMDP-Cyber is 33\% and WMDP-Chem 7\%. The original paper led its instability result with WMDP-Cyber{,} and the revision inherited that habit.
+That is the wrong lead for this venue, and it also understates the finding. The most order-sensitive dataset in the study is \key{LB-DbQA, a biology task}, at 32.7\% of decisions steerable --- higher than WMDP-Cyber's 30.6\%. Under reversal the most affected is \key{LB-DbQA}, also biology, at 34.2\% of predictions changed.
+\textbf{Recommended before submission:} re-lead the abstract, Section~4.5 and the conclusion with the biology numbers, keeping WMDP-Cyber as the secondary comparison. This is a presentation change only --- every number below is already collected.
+\section{Reviewer 11A --- ``limited contribution''}
+\emph{``The main contribution of the paper is benchmarking of jev on different suites of Bio based datasets. This is a limited contribution.''}
+No experiment answers this; it is a framing failure. The contributions were rewritten:
+\begin{center}\small\begin{tabular}{@{}p{7.3cm}p{7.3cm}@{}}\toprule\textbf{Was} & \textbf{Now} \\\midrule``A reliability audit of a commercial System-1 model across 6{,}020 items'' &``A protocol for auditing a scored decision API'' --- establishes what the vendor's uncertainty field measures before trusting it \\[4pt]``A controlled answer-order study'' &``Answer order is a decision-steering surface'' \\[4pt]``An evaluation of selective permutation averaging'' &``Confidence cut-offs do not transfer across tasks'' \\\bottomrule\end{tabular}\end{center}
+\textbf{Worked example of contribution 1.} The API returns a field named \texttt{confidence}. On a four-option item where the model splits evenly between two candidates ($p_{\max}=0.5$){,} it reports 0.33{,} not 0.5. The field is $(p_{\max}-1/n)/(1-1/n)${,} matching 97.9\% of 6{,}020 records. Measuring calibration against it gives ECE \key{0.091} where the true figure is \key{0.034} --- wrong by 2.7$\times$. The check is three lines and applies to any scored interface.
+Selective permutation averaging was demoted from a contribution to a paragraph, and benchmark accuracy moved from being \emph{the} result to Table~1 supporting the others.
+\section{Reviewer 11B.3 --- task-specific calibration}
+\emph{``\ldots how confidence thresholds should be selected for practical deployment.''} Answered with a measurement, using \textbf{no new API calls}.
+Procedure: on each dataset, fit the lowest $p_{\max}$ cut-off holding errors among accepted items at or below 5\%; then apply that cut-off unchanged elsewhere.
+\begin{center}\small\begin{tabular}{@{}lrrr@{}}\toprule
+Cut-off fitted on & value & error on own task & worst elsewhere \\\midrule
+WMDP-Bio & 0.87 & 5.0\% & 40.0\% on LB-LitQA2 (8.0$\times$) \\
+WMDP-Cyber & 0.94 & 4.7\% & 4.8\% on WMDP-Chem (1.0$\times$) \\
+LB-SeqQA & 0.55 & 4.5\% & 51.0\% on LB-LitQA2 (10.2$\times$) \\
+\bottomrule\end{tabular}\end{center}
+\key{On 5 of 10 tasks no cut-off reaches 5\% at any coverage}: LB-CloningScenarios, LB-DbQA, LB-LitQA2, LB-ProtocolQA, LB-SuppQA. For those, the honest deployment answer is not to automate at all. Per-task ECE spans 0.033 to 0.193, a 6-fold range that the pooled figure of 0.034 conceals.
+\textbf{A defect this caught.} A draft of this table reported a 100\% error rate that rested on three accepted items. Cells below 20 accepted items are now flagged in the data and a build check refuses to let one be quoted.
+\section{Reviewers 11B.2 and 11B.4 --- biosecurity relevance and robustness}
+The core experiment. Each item is answered under four presentations, and separately under four \emph{byte-identical} repeats. Both cost four calls, so the difference between them is what re-presentation costs rather than what extra calls buy. \emph{Steerable} = answered correctly under some presentations and incorrectly under others; it needs no knowledge of the correct answer, so it is the quantity an operator should worry about.
+\begin{center}\small\begin{tabular}{@{}llrrrrr@{}}\toprule
+Dataset & domain & $n$ & options & noise only & {} + order & due to order \\\midrule
+LB-DbQA & biology & 520 & 4 & 0.058 & \key{0.327} & $+$26.9~pp \\
+WMDP-Cyber & cyber & 1987 & 4 & 0.065 & 0.306 & $+$24.2~pp \\
+LB-SeqQA & biology & 600 & 2--5 & 0.083 & \key{0.295} & $+$21.2~pp \\
+LB-LitQA2 & biology & 199 & 2--10 & 0.020 & 0.206 & $+$18.6~pp \\
+WMDP-Chem & chem & 408 & 4 & 0.042 & 0.154 & $+$11.3~pp \\
+WMDP-Bio-Robust & biology & 811 & 4 & 0.030 & 0.104 & $+$7.4~pp \\
+WMDP-Bio & biology & 1273 & 4 & 0.020 & 0.095 & $+$7.5~pp \\
+\bottomrule\end{tabular}\end{center}
+The interval excludes zero on all 7 datasets. Three statements the reviewed version could not make: instability is \textbf{not} an artefact of four-option questions (the two datasets whose option counts run from 2 to 10 are among the least stable); WMDP-Cyber is \textbf{not} the worst case; and robustness to paraphrase buys no robustness to reordering --- WMDP-Bio-Robust, built for robustness, is no steadier than WMDP-Bio.
+\subsection*{One reversed presentation, every dataset}
+Reversing the option list is a single meaning-preserving change costing one call per item, so it runs on all 10 datasets, including the three too small or too wide for a rotation sweep. For more than two options a reversal is not a rotation, so this also probes orderings outside the cyclic group everywhere.
+\begin{center}\small\begin{tabular}{@{}llrrrrr@{}}\toprule
+Dataset & domain & $n$ & accuracy & reversed & $q$ (BH) & predictions changed \\\midrule
+LB-DbQA & biology & 520 & 0.398 & 0.363 & 0.34 & 0.342 \\
+LB-SuppQA & biology & 82 & 0.366 & 0.463 & 0.34 & 0.341 \\
+LB-SeqQA & biology & 600 & 0.618 & 0.647 & 0.34 & 0.295 \\
+LB-CloningScenarios & biology & 32 & 0.469 & 0.406 & 0.89 & 0.281 \\
+WMDP-Cyber & cyber & 1987 & 0.634 & 0.644 & 0.54 & 0.268 \\
+LB-ProtocolQA & biology & 108 & 0.537 & 0.537 & 1.00 & 0.241 \\
+LB-LitQA2 & biology & 199 & 0.402 & 0.442 & 0.34 & 0.236 \\
+WMDP-Chem & chem & 408 & 0.730 & 0.755 & 0.34 & 0.127 \\
+WMDP-Bio-Robust & biology & 811 & 0.801 & 0.805 & 0.90 & 0.085 \\
+WMDP-Bio & biology & 1273 & 0.852 & 0.849 & 0.90 & 0.068 \\
+\bottomrule\end{tabular}\end{center}
+\key{No dataset's accuracy moves} (none significant after Benjamini--Hochberg; largest shift 9.8~pp) while \key{6.8\% to 34.2\% of individual predictions flip}. This is the paper's thesis in its cleanest form, and it holds on every task.
+\section{Where the new data corrected us}
+The reviewed version claimed instability was under-counted \emph{because} rotations preserve which option follows which, so they cannot see adjacency effects. We tested it rather than asserting it.
+Presenting 500 items per suite under all 24 orderings, we compared four rotations against four randomly chosen \emph{non}-rotations \emph{at the same budget}, so any difference is about which orderings rather than how many:
+\begin{center}\small\begin{tabular}{@{}lrr@{}}
+\toprule
+Suite & non-rotations $-$ rotations & 95\% CI \\
+\midrule
+WMDP-Cyber & -2.0~pp & $[-4.8, +0.8]$ \\
+WMDP-Bio & -0.2~pp & $[-2.4, +2.0]$ \\
+\bottomrule\end{tabular}\end{center}
+\key{Both straddle zero: the claim was wrong.} Rotations are representative of orderings in general. The figures understate instability only because four presentations are fewer than 24 --- across all of them 46.8\% of WMDP-Cyber items are answered inconsistently, against 37.2\% under rotations alone.
+Reporting only that unmatched comparison --- ``24 orderings find more than 4'' --- would have appeared to confirm the explanation we started with. It does not. The adjacency claim has been removed from the paper.
+\section{Reviewer 11B.1 --- a second model}
+\emph{``\ldots another lightweight model or a representative generative baseline.''} No second vendor was available, and we did not substitute a loosely comparable model. The revision period supplied a partial answer instead.
+The alias the original runs named, \texttt{jev-latest}, moved from \texttt{jev-1.13.0} to \texttt{jev-1.14.0} within six weeks, with no change to the identifier. \key{An evaluation reached through a floating alias is therefore not reproducible}; the endpoint accepts a concrete version and the harness now pins one.
+\begin{center}\small\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Suite & $n$ & published & updated & McNemar $p$ & decisions differing \\
+\midrule
+WMDP-Cyber & 1987 & 0.634 & 0.640 & 0.43 & 13.9\% \\
+WMDP-Bio & 1273 & 0.852 & 0.851 & 1 & 4.6\% \\
+\bottomrule\end{tabular}\end{center}
+Accuracy is unchanged on both suites, yet the builds disagree on up to \key{13.9\% of decisions} --- the same pattern as reordering, now across versions. The steerable fraction is retained (30.6\% to 26.0\% on WMDP-Cyber), so these properties are not an artefact of one frozen build. Two builds of one vendor's model remain a weak substitute for a second vendor, and the paper says so.
+This also prevented a silent defect: collected through the alias, the new arms would have run against the updated model and been compared against data from the old one.
+\section{What it cost, and what is verified}
+\begin{center}\small\begin{tabular}{@{}lrl@{}}
+\toprule
+New arm & calls & purpose \\
+\midrule
+Rotations{,} WMDP-Chem and Bio-Robust & 4{,}876 & completes the four WMDP suites \\
+Rotations{,} three LAB-Bench tasks & 5{,}229 & biology; option counts 2--10 \\
+Identical-call controls{,} five datasets & 10{,}152 & separates order from endpoint noise \\
+All 24 orderings{,} 500 items per suite & 24{,}000 & matched control; corrected us \\
+Reversed order{,} all ten datasets & 6{,}021 & non-cyclic ordering{,} every task \\
+Cross-version replication & 16{,}300 & the second-system answer \\
+\midrule
+\textbf{Total new data} & \textbf{66{,}578} & \textbf{$\approx$\$2.07} \\
+\bottomrule\end{tabular}\end{center}
+\textbf{Verified from a clean tree:} the analysis regenerates byte-identically across two runs; 163 macros in the paper are cited and checked against the rendered PDF; 12 consistency checks pass, five added for the new results; permutation inversion is tested on 3{,}000 randomised cases; the body is within the six-page limit; lint clean.
+\textbf{Not done:} no second vendor; no biosafety or hazard-classification task; no latency measurement. Each is stated in the paper's limitations rather than worked around.
+\end{document}
