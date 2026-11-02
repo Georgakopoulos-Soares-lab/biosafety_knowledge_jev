@@ -332,9 +332,16 @@ A(r"\textbf{Verified from a clean tree:} the analysis regenerates byte-identical
   r"two runs; 163 macros in the paper are cited and checked against the rendered PDF; 12 "
   r"consistency checks pass, five added for the new results; permutation inversion is "
   r"tested on 3{,}000 randomised cases; the body is within the six-page limit; lint clean.")
-A(r"\textbf{Not done:} no second vendor; no biosafety or hazard-classification task; no "
-  r"latency measurement. Each is stated in the paper's limitations rather than worked "
-  r"around.")
+A(r"\textbf{Asked for and not delivered --- one item.} Reviewer 11B.1 asked for a second "
+  r"model. No second vendor was available, and we declined to substitute a loosely "
+  r"comparable system and present it as settling the question. The cross-version arm above "
+  r"is a partial answer and is labelled as partial.")
+A(r"\textbf{Scope boundaries we state, which no reviewer asked us to cross.} We evaluate "
+  r"no biosafety or hazard-classification task: reviewer 11B.2 explicitly noted that we "
+  r"``clearly acknowledge this distinction'' and asked for a fuller discussion of the "
+  r"deployment consequences, not for such a benchmark to be built. That discussion is "
+  r"Section~5. We also do not measure latency, which neither reviewer raised; it is "
+  r"declared so that the cost argument is not mistaken for a speed claim.")
 
 A(r"\end{document}")
 
