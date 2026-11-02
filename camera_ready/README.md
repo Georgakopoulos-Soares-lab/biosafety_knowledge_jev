@@ -3,17 +3,20 @@
 *Auditing System-1 Models on Biosecurity-Relevant Benchmarks: Calibration, Selective
 Prediction, and Permutation Instability in a Non-Generative Model*
 
-BioAISS 2026 (ACSAC workshop) — revision R1. Title unchanged from the reviewed version;
-neither reviewer asked for a change to it.
+BioAISS 2026 (ACSAC workshop) — revision R1. Submission deadline 06 November 2026.
+Production editor: Martha Nunez, martha.nunez@contractor.ieee.org.
+
+Title unchanged from the reviewed version; neither reviewer asked for a change to it.
 
 ## Contents
 
 ```
-paper.pdf                           the camera-ready paper (6 counted pages, US Letter)
+paper.pdf                           the camera-ready paper (6 pages, US Letter, PDF 1.4)
 source/                             LaTeX source, compiles standalone
-  main.tex                          manuscript
+  main.tex                          manuscript, \documentclass[conference]{IEEEtran}
   numbers.tex                       every statistic, as \stat* macros (generated)
   refs.bib                          bibliography
+  main.bbl                          pre-built bibliography, so no BibTeX pass is needed
   IEEEtran.cls                      venue class file
   figs/                             figure PDF and the two generated tables
 response/
@@ -21,14 +24,38 @@ response/
   revision-report.pdf               longer record of what changed, with the data
 ```
 
+## IEEE submission checklist
+
+Verified against the production instructions, by inspecting the file rather than assuming:
+
+| Requirement | Status |
+|---|---|
+| Page size 612 x 792 pt (8.5 x 11 in) | US Letter, enforced by a build guard |
+| Conference mode | `\documentclass[conference]{IEEEtran}`, matching the linked template |
+| All fonts embedded and subset | 17 of 17 fonts, verified with `pdffonts` |
+| Graphics at 300 dpi or better | the only figure is vector PDF, so resolution-independent |
+| Acrobat 5.0 compatibility | PDF 1.4, set via `\special{pdf:minorversion 4}` |
+| Bibliography style | `IEEEtran.bst`, as supplied in IEEEtranBST2 |
+| Unresolved references | none |
+| Optimized (linearized) | **not applied** --- see below |
+
+**On linearization.** The instructions list "Optimized" among the distiller settings. No
+linearizer (`qpdf`, Ghostscript) is installed here, so `paper.pdf` is not linearized.
+This is a web-delivery optimisation rather than a rendering property, and PDF eXpress
+produces the Xplore-compatible file in any case. If production asks for it:
+`qpdf --linearize paper.pdf paper-linearized.pdf`.
+
+**If submitting source instead of PDF.** PDF eXpress needs all support files for LaTeX.
+Send the whole `source/` directory; `main.bbl` is included so no BibTeX pass is required.
+
 ## Building
 
 ```sh
 cd source && tectonic -X compile main.tex --outfmt pdf
 ```
 
-No other dependency. Produces 7 physical pages: six of body and references, plus the LLM
-Usage Statement alone on page 7, which the venue excludes from the limit.
+No other dependency, and no network access needed. Produces 6 pages; verified by building
+from a clean copy of `source/` with zero errors.
 
 ## A note on the numbers
 

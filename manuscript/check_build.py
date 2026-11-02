@@ -73,13 +73,24 @@ if pages is not None:
     try:
         per_page = subprocess.run(["pdftotext", "-layout", f"{HERE}/main.pdf", "-"],
                                   capture_output=True, text=True).stdout.split("\f")[:-1]
-        start = next(i for i, pg in enumerate(per_page, 1) if "LLM Usage Statement" in pg)
+        # IEEEtran's non-compsoc conference mode sets \section* headings in letter-spaced
+        # small caps, so the rendered text reads "LLM U SAGE S TATEMENT". Match on the
+        # letters alone rather than the literal string, or the heading looks absent and
+        # the whole page-accounting rule silently misfires.
+        def _find(pg):
+            flat = re.sub(r"[^a-z]", "", pg.lower())
+            return flat.find("llmusagestatement")
+
+        start = next(i for i, pg in enumerate(per_page, 1) if _find(pg) >= 0)
         # A two-column page puts both columns on the same text line, so "is the heading
         # the first line?" is not a usable test: references can sit in the left column
         # while the statement starts the right. Test for counted content instead --
         # references count toward the limit, only the statement itself does not.
         page_txt = per_page[start - 1]
-        cut = page_txt.index("LLM Usage Statement")
+        # Locate the heading in the original text, allowing for the small-caps spacing.
+        m = re.search(r"L\s*L\s*M\s+U\s*S\s*A\s*G\s*E\s+S\s*T\s*A\s*T\s*E\s*M\s*E\s*N\s*T",
+                      page_txt, re.IGNORECASE)
+        cut = m.start() if m else 0
         others = re.findall(r"\[\d+\]|References|\\section", page_txt)
         shares = bool(others) or cut > 0 and bool(page_txt[:cut].strip())
         body_pages = start if shares else start - 1
