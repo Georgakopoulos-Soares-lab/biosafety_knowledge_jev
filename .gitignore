@@ -11,3 +11,6 @@ manuscript/main.blg
 manuscript/main.aux
 manuscript/main.out
 manuscript/*.synctex.gz
+
+# macOS
+.DS_Store
